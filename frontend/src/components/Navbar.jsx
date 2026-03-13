@@ -14,6 +14,7 @@ export default function Navbar() {
     { to: "/panel", label: "Panel", icon: <PanelRight size={18} /> },
     { to: "/baskets", label: "Baskets", icon: <Package size={18} /> },
     { to: "/history", label: "History", icon: <History size={18} /> },
+    { to: "/broker", label: "Broker", icon: <ShieldCheck size={18} /> },
   ];
 
   return (
