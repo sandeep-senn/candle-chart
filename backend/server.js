@@ -78,25 +78,35 @@ app.use("/api/baskets", basketRoutes);
 import { loadAngelTokens, setInstruments } from "./services/instrumentService.js";
 
 async function startApp() {
-  try {
-    // Load instruments on startup so search works
-    const { map: angelMap, raw: angelRaw } = await loadAngelTokens();
-    const searchableInstruments = angelRaw
-      .filter(i => i.exch_seg === "NSE" || i.exch_seg === "BSE") // Focus on Equity for search performance
-      .map(i => ({
-        token: i.token,
-        symbol: i.symbol,
-        name: i.name,
-        exchange: i.exch_seg
-      }));
-    setInstruments(searchableInstruments);
+  const PORT = process.env.PORT || 3000;
+  
+  // Start listening immediately so Render/Platform health checks pass
+  server.listen(PORT, () => {
+    console.log(`Server is live on port ${PORT}`);
+    
+    // Background tasks
+    loadInitialData();
+  });
+}
 
-    server.listen(3000, () => {
-      console.log("Dynamic Multi-User Server running on 3000");
-    });
+async function loadInitialData() {
+  try {
+    console.log("Loading initial instrument data in background...");
+    const { map: angelMap, raw: angelRaw } = await loadAngelTokens();
+    if (angelRaw && angelRaw.length > 0) {
+      const searchableInstruments = angelRaw
+        .filter(i => i.exch_seg === "NSE" || i.exch_seg === "BSE")
+        .map(i => ({
+          token: i.token,
+          symbol: i.symbol,
+          name: i.name,
+          exchange: i.exch_seg
+        }));
+      setInstruments(searchableInstruments);
+      console.log("Instrument data loaded successfully.");
+    }
   } catch (err) {
-    console.error("Startup error:", err);
-    process.exit(1);
+    console.error("Initial data load failed:", err);
   }
 }
 

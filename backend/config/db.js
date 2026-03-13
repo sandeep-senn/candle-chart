@@ -4,8 +4,13 @@ dotenv.config();
 
 const { Pool } = pkg;
 
-const poolConfig = process.env.POSTRGES_URI || process.env.postgresurl 
-  ? { connectionString: process.env.POSTRGES_URI || process.env.postgresurl }
+const isProduction = process.env.POSTRGES_URI || process.env.postgresurl;
+
+const poolConfig = isProduction
+  ? { 
+      connectionString: process.env.POSTRGES_URI || process.env.postgresurl,
+      ssl: { rejectUnauthorized: false } // Required for Render/vCore databases
+    }
   : {
       user: "postgres",
       host: "localhost",
