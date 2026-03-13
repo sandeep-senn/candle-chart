@@ -10,7 +10,7 @@ import TradingPanel from "./pages/TradingPanel";
 import ChangePassword from "./pages/ChangePassword";
 import HistoryDashboard from "./pages/HistoryDashboard";
 import BasketOrders from "./pages/BasketOrders";
-import BrokerConnect from "./pages/BrokerConnect";
+import BrokerSettings from "./pages/BrokerSettings";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -118,7 +118,7 @@ export default function App() {
           path="/broker"
           element={
             <ProtectedRoute>
-              <BrokerConnect />
+              <BrokerSettings />
             </ProtectedRoute>
           }
         />
