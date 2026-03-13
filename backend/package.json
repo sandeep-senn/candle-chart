@@ -23,9 +23,9 @@
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.3",
-    "kiteconnect": "^5.1.0",
     "mongoose": "^9.1.6",
     "nvm": "^0.0.4",
+    "otplib": "^12.0.1",
     "p-limit": "^7.3.0",
     "pg": "^8.18.0",
     "promise-throttle": "^1.1.2",
@@ -34,5 +34,8 @@
     "swagger-ui-express": "^5.0.1",
     "technicalindicators": "^3.1.0",
     "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "smartapi-javascript": "^1.0.27"
   }
 }

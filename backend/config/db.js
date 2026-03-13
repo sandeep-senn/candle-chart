@@ -4,13 +4,17 @@ dotenv.config();
 
 const { Pool } = pkg;
 
-const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "trading_multi_user", // CHANGED: New database for multi-user project
-  password: "Sandeep1111",
-  port: 5432,
-});
+const poolConfig = process.env.POSTRGES_URI || process.env.postgresurl 
+  ? { connectionString: process.env.POSTRGES_URI || process.env.postgresurl }
+  : {
+      user: "postgres",
+      host: "localhost",
+      database: "trading_db",
+      password: "Sandeep1111",
+      port: 5432,
+    };
+
+const pool = new Pool(poolConfig);
 
 const createTables = async () => {
   try {
@@ -26,20 +30,23 @@ const createTables = async () => {
     `);
     console.log("Users table verified.");
 
-    // 2. Kite Credentials Table (SEPARATE Table as requested)
+    // 2. AngelOne Credentials Table
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS user_kite_credentials (
+      CREATE TABLE IF NOT EXISTS user_angelone_credentials (
         id SERIAL PRIMARY KEY,
         user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
         api_key TEXT NOT NULL,
-        api_secret TEXT NOT NULL,
-        access_token TEXT,
-        request_token TEXT,
+        client_code TEXT NOT NULL,
+        password TEXT NOT NULL,
+        totp_secret TEXT NOT NULL,
+        jwt_token TEXT,
+        refresh_token TEXT,
+        feed_token TEXT,
         last_login TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    console.log("Kite Credentials table verified.");
+    console.log("AngelOne Credentials table verified.");
 
     // 3. Baskets Table
     await pool.query(`
@@ -69,6 +76,25 @@ const createTables = async () => {
       );
     `);
     console.log("Basket Orders table verified/created.");
+
+    // 4. Historical Trading Data Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS trading (
+        id SERIAL PRIMARY KEY,
+        tradingsymbol VARCHAR(50) NOT NULL,
+        date TIMESTAMP NOT NULL,
+        interval VARCHAR(10) NOT NULL,
+        open NUMERIC NOT NULL,
+        high NUMERIC NOT NULL,
+        low NUMERIC NOT NULL,
+        close NUMERIC NOT NULL,
+        volume BIGINT DEFAULT 0,
+        "change" NUMERIC DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(tradingsymbol, date, interval)
+      );
+    `);
+    console.log("Historical Trading (trading) table verified.");
 
   } catch (err) {
     console.error("Error creating tables:", err);

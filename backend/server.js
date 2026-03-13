@@ -7,12 +7,15 @@ import http from "http";
 import { Server } from "socket.io";
 
 import authRoutes from "./auth/routes/auth.route.js";
-import kiteRoutes from "./auth/routes/kite.route.js";
+import angelRoutes from "./auth/routes/angel.route.js";
 import companyRoutes from "./routes/company.routes.js";
 import marginRoutes from "./routes/margin.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import historyRoutes from "./routes/historical.routes.js";
 import basketRoutes from "./routes/basket.routes.js";
+
+import { subscribeToAngelTokens } from "./clients/AngelTicker.js";
+import { protect } from "./auth/utils/util.js";
 
 /* ================= APP INIT ================= */
 
@@ -42,14 +45,28 @@ io.on("connection", (socket) => {
 /* ================= ROUTES ================= */
 
 app.use("/api/auth", authRoutes);
-app.use("/api/kite", kiteRoutes);
+app.use("/api/angel", angelRoutes);
 
-app.get("/broker-login", (req, res) => {
-  const { request_token, state } = req.query;
-  // Use state if available (we passed it in the Login URL), otherwise default
-  const userState = state || "default";
-  res.redirect(`http://localhost:5174/kite-callback?request_token=${request_token}&state=${userState}`);
+app.post("/api/subscribe", protect, async (req, res) => {
+  const userId = req.user.id;
+  const { tokens, exchangeType } = req.body;
+
+  // 1. Angel One subscription
+  // Angel One subscription needs exchangeType mapping
+  // 1=NSE, 2=NFO, 3=BSE, 4=MCX etc.
+  if (tokens && tokens.length > 0) {
+    const angelSubData = [
+      {
+        exchangeType: exchangeType || 1, // Default NSE
+        tokens: tokens.map(String)
+      }
+    ];
+    subscribeToAngelTokens(userId, angelSubData);
+  }
+
+  res.json({ success: true, message: "Subscription request sent to active brokers" });
 });
+
 app.use("/api/companies", companyRoutes);
 app.use("/api/margin", marginRoutes);
 app.use("/api/order", orderRoutes);
@@ -58,8 +75,22 @@ app.use("/api/baskets", basketRoutes);
 
 /* ================= START APP ================= */
 
+import { loadAngelTokens, setInstruments } from "./services/instrumentService.js";
+
 async function startApp() {
   try {
+    // Load instruments on startup so search works
+    const { map: angelMap, raw: angelRaw } = await loadAngelTokens();
+    const searchableInstruments = angelRaw
+      .filter(i => i.exch_seg === "NSE" || i.exch_seg === "BSE") // Focus on Equity for search performance
+      .map(i => ({
+        token: i.token,
+        symbol: i.symbol,
+        name: i.name,
+        exchange: i.exch_seg
+      }));
+    setInstruments(searchableInstruments);
+
     server.listen(3000, () => {
       console.log("Dynamic Multi-User Server running on 3000");
     });

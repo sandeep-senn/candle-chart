@@ -1,3 +1,5 @@
+import axios from "axios";
+
 let instruments = [];
 
 export const setInstruments = (data) => {
@@ -9,26 +11,35 @@ export const getInstruments = () => {
     return instruments;
 };
 
+export const getInstrumentBySymbol = (symbol) => {
+    return instruments.find(i => i.symbol === symbol || i.name === symbol);
+};
+
+export const findTokenBySymbol = (symbol) => {
+    const inst = getInstrumentBySymbol(symbol);
+    return inst ? inst.token : null;
+};
+
+
 /**
- * Loads a map of instrument_token -> tradingsymbol for Ticker mapping
+ * Loads Angel One instruments
  */
-export async function loadSpotTokens(kite) {
+export async function loadAngelTokens() {
     try {
-        console.log("[InstrumentService] Loading spot tokens for Ticker mapping...");
-        const [nse, bse] = await Promise.all([
-            kite.getInstruments("NSE"),
-            kite.getInstruments("BSE")
-        ]);
+        console.log("[InstrumentService] Loading Angel One tokens...");
+        const response = await axios.get("https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json");
+        const data = response.data;
 
         const map = {};
-        [...nse, ...bse].forEach(i => {
-            map[i.instrument_token] = i.tradingsymbol;
+        data.forEach(i => {
+            // Key by token for quick lookup in WebSocket
+            map[i.token] = i.tradingsymbol;
         });
 
-        console.log(`[InstrumentService] Mapped ${Object.keys(map).length} tokens.`);
-        return map;
+        // Also return the raw data array for searching
+        return { map, raw: data };
     } catch (err) {
-        console.error("[InstrumentService] Failed to load spot tokens:", err);
-        return {};
+        console.error("[InstrumentService] Failed to load Angel One tokens:", err);
+        return { map: {}, raw: [] };
     }
 }
