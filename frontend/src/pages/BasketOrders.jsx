@@ -4,8 +4,9 @@ import api from "../api/api";
 import { Plus, Trash2, Play, Search, X, Calculator, IndianRupee, Pencil, ShoppingCart } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { io } from "socket.io-client";
+import { SOCKET_URL } from "../config";
 
-const socket = io("http://localhost:3000", {
+const socket = io(SOCKET_URL, {
     transports: ["websocket"],
 });
 

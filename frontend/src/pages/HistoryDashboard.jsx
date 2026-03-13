@@ -20,6 +20,7 @@ import {
   ChevronRight
 } from "lucide-react";
 import { io } from "socket.io-client";
+import { SOCKET_URL, API_BASE_URL } from "../config";
 
 const HistoryDashboard = () => {
   const navigate = useNavigate();
@@ -230,7 +231,7 @@ const HistoryDashboard = () => {
 
   
   useEffect(() => {
-    socketRef.current = io("http://localhost:3000");
+    socketRef.current = io(SOCKET_URL);
 
     socketRef.current.on("connect", () => {
       console.log("Connected to WebSocket");
@@ -393,7 +394,7 @@ const HistoryDashboard = () => {
 
     try {
       const encodedSymbol = encodeURIComponent(currentSymbol);
-      let url = `http://localhost:3000/api/historical/${encodedSymbol}?interval=day`;
+      let url = `${API_BASE_URL}/api/historical/${encodedSymbol}?interval=day`;
 
       if (fetchAll) {
         url += `&limit=10000`;

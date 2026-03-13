@@ -1,10 +1,11 @@
 import { io } from "socket.io-client";
+import { SOCKET_URL } from "../config";
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import { AnimatePresence, motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Activity, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
-const socket = io("http://localhost:3000", {
+const socket = io(SOCKET_URL, {
   transports: ["websocket"],
 });
 

@@ -3,8 +3,9 @@ import { toast } from "react-toastify";
 import api from "../api/api";
 import { io } from "socket.io-client";
 import { Search, Zap, Trash2, ArrowRightLeft, ShieldCheck, TrendingUp, TrendingDown, HelpCircle, Activity } from "lucide-react";
+import { SOCKET_URL } from "../config";
 
-const socket = io("http://localhost:3000", {
+const socket = io(SOCKET_URL, {
   transports: ["websocket"],
 });
 
