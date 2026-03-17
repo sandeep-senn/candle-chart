@@ -48,7 +48,7 @@ export const calculateMargin = async (req, res) => {
             }]
         });
 
-        const rms = await smartApi.getRMSLimit();
+        const rms = await smartApi.getRMS();
         const availableMargin = rms.status ? parseFloat(rms.data.availablecash) : 0;
 
         if (response.status && response.data) {

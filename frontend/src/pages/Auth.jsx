@@ -32,6 +32,9 @@ export default function Auth() {
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
       const res = await api.post(endpoint, formData);
       localStorage.setItem("token", res.data.token);
+      if (res.data.user?.id) {
+          localStorage.setItem("userId", res.data.user.id);
+      }
       toast.success(isLogin ? "Welcome back!" : "Account created successfully");
       navigate("/broker");
     } catch (err) {

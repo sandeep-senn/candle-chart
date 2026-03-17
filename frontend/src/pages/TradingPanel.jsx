@@ -33,10 +33,14 @@ export default function TradingPanel() {
     useEffect(() => {
         document.title = "Trading Terminal | Candle";
         
-        const socket = io(SOCKET_URL);
+        const userId = localStorage.getItem("userId");
+        const socket = io(SOCKET_URL, {
+            query: { userId }
+        });
         
         socket.on("price-update", (data) => {
-            if (selectedCompany && data.symbol === selectedCompany.symbol) {
+            // Match by token for 100% accuracy (symbols like RELIANCE vs RELIANCE-EQ can cause mismatches)
+            if (selectedCompany && data.instrument_token === selectedCompany.token) {
                 setLivePrice(data.ltp);
             }
         });

@@ -236,7 +236,7 @@ export const getBasketMargin = async (req, res) => {
             }
 
             // 2. Get Available Funds
-            const rms = await smartApi.getRMSLimit();
+            const rms = await smartApi.getRMS();
             if (rms.status && rms.data) {
                 availableMargin = parseFloat(rms.data.availablecash);
             }
