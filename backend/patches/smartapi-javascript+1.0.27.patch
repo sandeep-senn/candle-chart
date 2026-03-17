@@ -1,0 +1,27 @@
+diff --git a/node_modules/smartapi-javascript/config/api.js b/node_modules/smartapi-javascript/config/api.js
+index 43b7582..ee45772 100644
+--- a/node_modules/smartapi-javascript/config/api.js
++++ b/node_modules/smartapi-javascript/config/api.js
+@@ -44,6 +44,7 @@ module.exports.API = {
+   nseIntraday : 'rest/secure/angelbroking/marketData/v1/nseIntraday',
+   bseIntraday : 'rest/secure/angelbroking/marketData/v1/bseIntraday',
+ 	OIBuildup : 'rest/secure/angelbroking/marketData/v1/OIBuildup',
++	get_ltp : '/rest/secure/angelbroking/order/v1/getLtpData',
+ 	// "api.token": "/session/token",
+ 	// "api.token.invalidate": "/session/token",
+ 	// "api.token.renew": "/session/refresh_token",
+diff --git a/node_modules/smartapi-javascript/lib/smartapi-connect.js b/node_modules/smartapi-javascript/lib/smartapi-connect.js
+index b267dbb..189474c 100644
+--- a/node_modules/smartapi-javascript/lib/smartapi-connect.js
++++ b/node_modules/smartapi-javascript/lib/smartapi-connect.js
+@@ -457,6 +457,10 @@ var SmartApi = function (params) {
+ 		return post_request('market_data', params);
+ 	};
+     
++    self.getLtpData = function (params) {
++		return post_request('get_ltp', params);
++	};
++
+ 	/**
+ 	 * Description
+ 	 * @method searchScrip

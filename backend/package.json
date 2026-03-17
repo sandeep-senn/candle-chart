@@ -31,13 +31,14 @@
     "p-limit": "^7.3.0",
     "pg": "^8.18.0",
     "promise-throttle": "^1.1.2",
+    "smartapi-javascript": "^1.0.27",
     "socket.io": "^4.8.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "technicalindicators": "^3.1.0",
-    "ws": "^8.19.0",
-    "smartapi-javascript": "^1.0.27"
+    "ws": "^8.19.0"
   },
   "devDependencies": {
+    "patch-package": "^8.0.1"
   }
 }

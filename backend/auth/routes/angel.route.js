@@ -20,5 +20,20 @@ router.get("/status", protect, getAngelStatus);
 router.post("/margin", protect, calculateMargin);
 router.post("/placeOrder", protect, placeOrder);
 router.get("/positions", protect, getPositions);
+router.get("/test-ltp", protect, async (req, res) => {
+    const { userId = 1 } = req.query;
+    const session = (await import("../../clients/SmartApiSessionManager.js")).default.getSession(userId);
+    if (!session || !session.smartApi) return res.status(403).json({ success: false, message: "No session" });
+    try {
+        const response = await session.smartApi.getLtpData({
+            exchange: "NSE",
+            tradingsymbol: "SBIN-EQ",
+            symboltoken: "3045"
+        });
+        res.json(response);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 export default router;
