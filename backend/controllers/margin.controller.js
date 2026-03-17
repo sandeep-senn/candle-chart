@@ -17,53 +17,59 @@ export const calculateMargin = async (req, res) => {
 
     // 1. Check for Angel One Session
     const angelSession = smartApiSessionManager.getSession(userId);
-    if (angelSession && angelSession.smartApi) {
-      const smartApi = angelSession.smartApi;
-      
-      let availableMargin = 1000000;
-      try {
-        const rms = await smartApi.getRMSLimit();
-        if (rms.status) {
-          availableMargin = parseFloat(rms.data.availablecash);
-        }
-      } catch (e) {
-        console.error("RMS Error:", e.message);
-      }
-
-      const ltp = Number(price) || 1000;
-      const totalValue = ltp * Number(quantity);
-      const requiredMargin = product === "CARRYFORWARD" ? totalValue : totalValue / 5; 
-      
-      return res.json({
-        success: true,
-        broker: "AngelOne",
-        requiredMargin,
-        availableMargin,
-        allowed: availableMargin >= requiredMargin
-      });
+    if (!angelSession || !angelSession.smartApi) {
+        return res.status(401).json({
+            success: false,
+            message: "No active Angel One session found. Please login to your broker."
+        });
     }
 
-    // 2. Final Fallback (Mock) - Ensures UI never breaks
-    const mockLtp = Number(price) || 500;
-    const required = (mockLtp * Number(quantity)) / (product === "MIS" ? 5 : 1);
+    const smartApi = angelSession.smartApi;
+    
+    // Map product types for Margin API
+    const productMap = {
+        "INTRADAY": "INTRADAY",
+        "DELIVERY": "DELIVERY",
+        "CARRYFORWARD": "CARRYFORWARD",
+        "MARGIN": "MARGIN"
+    };
 
-    res.json({
-      success: true,
-      broker: "MOCK",
-      requiredMargin: required,
-      availableMargin: 50000,
-      allowed: true,
-      note: "No active broker session found. Showing demo margin."
-    });
+    try {
+        const response = await smartApi.marginApi({
+            positions: [{
+                exchange,
+                qty: Number(quantity),
+                price: orderType === "MARKET" ? 0 : Number(price),
+                productType: productMap[product] || product,
+                token,
+                tradeType: transactionType,
+                orderType: orderType
+            }]
+        });
 
+        const rms = await smartApi.getRMSLimit();
+        const availableMargin = rms.status ? parseFloat(rms.data.availablecash) : 0;
+
+        if (response.status && response.data) {
+            return res.json({
+                success: true,
+                broker: "AngelOne",
+                requiredMargin: response.data.totalMarginRequired,
+                availableMargin,
+                allowed: availableMargin >= response.data.totalMarginRequired,
+                components: response.data.marginComponents
+            });
+        } else {
+            throw new Error(response.message || "Failed to fetch margin from broker");
+        }
+    } catch (e) {
+        console.error("MARGIN API ERROR:", e.message);
+        res.status(400).json({
+            success: false,
+            message: e.message || "Could not calculate margin"
+        });
+    }
   } catch (error) {
-    console.error("MARGIN ERROR:", error.message);
-    res.json({
-      success: true, // Return true to keep UI functional
-      requiredMargin: 0,
-      availableMargin: 0,
-      allowed: true,
-      error: "Calculation error - using default"
-    });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

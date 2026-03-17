@@ -200,29 +200,55 @@ export const getBasketMargin = async (req, res) => {
         const userId = req.user.id || 1;
         const smartApi = getAngelInstance(userId);
 
+        if (!smartApi) return res.status(403).json({ message: "No active Angel One session" });
+
         const ordersResult = await pool.query("SELECT * FROM basket_orders WHERE basket_id = $1", [id]);
         const orders = ordersResult.rows;
 
         if (orders.length === 0) return res.json({ requiredMargin: 0, availableMargin: 0, allowed: true });
 
-        // Calculate total required margin (5x for intraday, 1x for carryforward as a standard)
-        let totalRequired = 0;
-        orders.forEach(o => {
-            const price = parseFloat(o.price) || 500;
-            const quantity = parseInt(o.quantity) || 1;
-            const leverage = o.product === "INTRADAY" ? 5 : 1;
-            totalRequired += (price * quantity) / leverage;
-        });
+        const productMap = {
+            "INTRADAY": "INTRADAY",
+            "DELIVERY": "DELIVERY",
+            "CARRYFORWARD": "CARRYFORWARD",
+            "MARGIN": "MARGIN"
+        };
 
-        // Fetch actual available margin from Angel One
-        let availableMargin = 1000000;
+        // Prepare positions for Batch Margin API
+        const positions = await Promise.all(orders.map(async (o) => ({
+            exchange: o.exchange,
+            qty: parseInt(o.quantity),
+            price: o.order_type === "MARKET" ? 0 : parseFloat(o.price),
+            productType: productMap[o.product] || o.product,
+            token: await findTokenBySymbol(o.tradingsymbol) || "0",
+            tradeType: o.transaction_type,
+            orderType: o.order_type
+        })));
+
+        let totalRequired = 0;
+        let availableMargin = 0;
+
         try {
+            // 1. Get Batch Margin Required
+            const marginRes = await smartApi.marginApi({ positions });
+            if (marginRes.status && marginRes.data) {
+                totalRequired = marginRes.data.totalMarginRequired;
+            }
+
+            // 2. Get Available Funds
             const rms = await smartApi.getRMSLimit();
-            if (rms.status) {
+            if (rms.status && rms.data) {
                 availableMargin = parseFloat(rms.data.availablecash);
             }
-        } catch (e) {
-            console.error("RMS Error:", e.message);
+        } catch (apiErr) {
+            console.error("Basket Margin API Error:", apiErr.message);
+            // Fallback to basic calculation if API is down
+            orders.forEach(o => {
+                const price = parseFloat(o.price) || 500;
+                const quantity = parseInt(o.quantity) || 1;
+                const leverage = o.product === "INTRADAY" ? 5 : 1;
+                totalRequired += (price * quantity) / leverage;
+            });
         }
 
         res.json({

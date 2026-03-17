@@ -1,6 +1,7 @@
 import pool from "../config/db.js";
 import { getInstrumentBySymbol } from "../services/instrumentService.js";
 import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
+import { calculateIndicators } from "../utils/indicatorUtil.js";
 
 /**
  * Get historical data for a specific symbol
@@ -71,11 +72,12 @@ export const getHistoricalData = async (req, res) => {
         return res.status(404).json({ success: false, message: "Data not available. Login to Angel One to sync." });
       }
 
-      const data = result.rows.map(row => ({
+      const processedData = calculateIndicators(result.rows.map(row => ({
         ...row,
         date: new Date(row.date).toISOString()
-      }));
-      res.json(data);
+      })));
+
+      res.json(processedData);
     } finally {
       client.release();
     }
@@ -126,8 +128,22 @@ export const getPriceData = async (req, res) => {
 };
 
 export const getChartStats = async (req, res) => {
-    // Basic stub for stats
-    res.json({ success: true, data: {} });
+    try {
+        const { symbol } = req.params;
+        const result = await pool.query(
+            `SELECT 
+                MAX(high) as high_52w, 
+                MIN(low) as low_52w,
+                AVG(volume) as avg_volume,
+                SUM(volume) as total_volume
+             FROM trading 
+             WHERE tradingsymbol = $1 AND date > NOW() - INTERVAL '1 year'`,
+            [symbol]
+        );
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ success: false });
+    }
 };
 
 export const healthCheck = async (req, res) => {
