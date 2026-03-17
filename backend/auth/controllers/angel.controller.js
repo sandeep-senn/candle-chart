@@ -2,6 +2,7 @@ import pool from "../../config/db.js";
 import { encrypt, decrypt } from "../utils/encryption.js";
 import smartApiSessionManager from "../../clients/SmartApiSessionManager.js";
 import { startAngelTicker } from "../../clients/AngelTicker.js";
+import { getInstruments } from "../../services/instrumentService.js";
 
 /**
  * Save/Update Angel One API Credentials for a user
@@ -98,5 +99,47 @@ export const logoutAngel = async (req, res) => {
     } catch (err) {
         console.error("Angel Logout Error:", err);
         res.status(500).json({ message: "Logout failed" });
+    }
+};
+
+/**
+ * Get Connection Status
+ */
+export const getAngelStatus = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const session = smartApiSessionManager.getSession(userId);
+        
+        if (session && session.smartApi) {
+            res.json({ success: true, status: "CONNECTED" });
+        } else {
+            res.json({ success: true, status: "DISCONNECTED" });
+        }
+    } catch (err) {
+        res.json({ success: true, status: "DISCONNECTED" });
+    }
+};
+
+/**
+ * Search instruments (symbols)
+ */
+export const searchInstruments = (req, res) => {
+    try {
+        const query = req.query.query?.toUpperCase() || req.query.q?.toUpperCase() || "";
+
+        if (query.length < 2) {
+            return res.json({ success: true, data: [] });
+        }
+
+        const all = getInstruments();
+        const results = all.filter(i => 
+            (i.symbol && i.symbol.toUpperCase().includes(query)) ||
+            (i.name && i.name.toUpperCase().includes(query))
+        ).slice(0, 15);
+
+        res.json({ success: true, data: results });
+    } catch (err) {
+        console.error("Search error:", err);
+        res.status(500).json({ success: false, message: "Search failed" });
     }
 };

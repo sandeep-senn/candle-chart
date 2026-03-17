@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
+import { findTokenBySymbol } from "../services/instrumentService.js";
 
 // Helper to get Angel One instance
 const getAngelInstance = (userId) => {
@@ -151,7 +152,7 @@ export const executeBasket = async (req, res) => {
                 const response = await smartApi.placeOrder({
                     variety: "NORMAL",
                     tradingsymbol: order.tradingsymbol,
-                    symboltoken: "0", // Needs actual token mapping in production
+                    symboltoken: findTokenBySymbol(order.tradingsymbol) || "0",
                     transactiontype: order.transaction_type,
                     exchange: order.exchange,
                     ordertype: order.order_type,
@@ -190,7 +191,7 @@ export const getBasketMargin = async (req, res) => {
 
         if (orders.length === 0) return res.json({ requiredMargin: 0, availableMargin: 0, allowed: true });
 
-        // Angel One batch margin calculation is complex, using mock for stability as in margin controller
+        // Calculate total required margin (5x for intraday, 1x for carryforward as a standard)
         let totalRequired = 0;
         orders.forEach(o => {
             const price = parseFloat(o.price) || 500;
@@ -199,11 +200,22 @@ export const getBasketMargin = async (req, res) => {
             totalRequired += (price * quantity) / leverage;
         });
 
+        // Fetch actual available margin from Angel One
+        let availableMargin = 1000000;
+        try {
+            const rms = await smartApi.getRMSLimit();
+            if (rms.status) {
+                availableMargin = parseFloat(rms.data.availablecash);
+            }
+        } catch (e) {
+            console.error("RMS Error:", e.message);
+        }
+
         res.json({
             requiredMargin: totalRequired,
-            availableMargin: 1000000,
-            allowed: true,
-            isMock: true
+            availableMargin,
+            allowed: availableMargin >= totalRequired,
+            isMock: false
         });
     } catch (err) {
         console.error(err);

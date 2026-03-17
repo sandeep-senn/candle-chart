@@ -17,10 +17,20 @@ export const calculateMargin = async (req, res) => {
 
     // 1. Check for Angel One Session
     const angelSession = smartApiSessionManager.getSession(userId);
-    if (angelSession) {
-      // Angel One API for margin calculation is batch-based.
-      // For now, we'll return a calculated mock based on 5x leverage typical for intraday.
-      const ltp = Number(price) || 1000; // Fallback if no price provided
+    if (angelSession && angelSession.smartApi) {
+      const smartApi = angelSession.smartApi;
+      
+      let availableMargin = 1000000;
+      try {
+        const rms = await smartApi.getRMSLimit();
+        if (rms.status) {
+          availableMargin = parseFloat(rms.data.availablecash);
+        }
+      } catch (e) {
+        console.error("RMS Error:", e.message);
+      }
+
+      const ltp = Number(price) || 1000;
       const totalValue = ltp * Number(quantity);
       const requiredMargin = product === "CARRYFORWARD" ? totalValue : totalValue / 5; 
       
@@ -28,8 +38,8 @@ export const calculateMargin = async (req, res) => {
         success: true,
         broker: "AngelOne",
         requiredMargin,
-        availableMargin: 1000000, // Mocked for demo
-        allowed: true
+        availableMargin,
+        allowed: availableMargin >= requiredMargin
       });
     }
 

@@ -1,179 +1,188 @@
-import { useState } from "react";
-import api from "../api/api";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { 
+  Terminal, ShieldCheck, Mail, Lock, 
+  ArrowRight, Activity, TrendingUp 
+} from "lucide-react";
 import { toast } from "react-toastify";
-import { User, Mail, Lock, ArrowRight, Heart } from "lucide-react";
+import api from "../api/api";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function Auth() {
-  const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({
-    username: "",
+  const [isLogin, setIsLogin] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
     email: "",
     password: "",
   });
+
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  useEffect(() => {
+    document.title = isLogin ? "Login | Candle" : "Join | Candle";
+  }, [isLogin]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (mode === "register") {
-      api.post("/auth/register", {
-        username: form.username,
-        email: form.email,
-        password: form.password,
-      })
-        .then(() => {
-          toast.success("Welcome aboard! You can now log in.");
-          setMode("login");
-        })
-        .catch(err => toast.error(err.response?.data?.message || "Registration failed"));
-    } else if (mode === "login") {
-      api.post("/auth/login", {
-        email: form.email,
-        password: form.password,
-      })
-        .then(res => {
-          const token = res.data.token;
-          localStorage.setItem("token", token);
-          toast.success("Good to see you again!");
-          navigate("/");
-        })
-        .catch(err => toast.error(err.response?.data?.message || "Login failed"));
-    } else if (mode === "forgot") {
-      api.post("/auth/forgot-password", {
-        email: form.email,
-      })
-        .then(() => {
-          toast.success("We've sent a rescue link to your email.");
-          setMode("login");
-        })
-        .catch(err => toast.error(err.response?.data?.message || "Failed to send reset link"));
+    setProcessing(true);
+    try {
+      const endpoint = isLogin ? "/auth/login" : "/auth/register";
+      const res = await api.post(endpoint, formData);
+      localStorage.setItem("token", res.data.token);
+      toast.success(isLogin ? "Welcome back!" : "Account created successfully");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Authentication failed");
+    } finally {
+      setProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-
-      {/* Aesthetic Card */}
-      <div className="soft-card w-full max-w-md p-10 md:p-12 relative overflow-hidden group">
-
-        {/* Background Accent */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-orange-100/50 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
-
-        <div className="relative z-10 text-center mb-10">
-          <div className="w-16 h-16 bg-orange-500 rounded-2xl shadow-xl shadow-orange-100 flex items-center justify-center mx-auto mb-6">
-            <Heart className="text-white fill-white/20" size={32} />
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-zinc-50 tracking-tight">
+      
+      {/* Visual Side */}
+      <div className="hidden lg:flex flex-col justify-between p-12 bg-zinc-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-zinc-800 rounded-full -translate-y-1/2 translate-x-1/2 opacity-20 blur-3xl"></div>
+        
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-zinc-900 shadow-xl">
+             <Terminal size={20} />
           </div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-            {mode === "login" && "Welcome Home"}
-            {mode === "register" && "Join the Family"}
-            {mode === "forgot" && "Reset Password"}
-          </h2>
-          <p className="text-slate-500 mt-2 font-medium">
-            {mode === "login" && "Ready to continue your journey?"}
-            {mode === "register" && "Start your trading adventure today."}
-            {mode === "forgot" && "We'll help you get back in."}
-          </p>
+          <span className="text-lg font-bold tracking-tight">Candle Terminal</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
-          {mode === "register" && (
-            <div className="relative flex items-center">
-              <User className="absolute left-4 text-slate-300" size={18} />
-              <input
-                name="username"
-                placeholder="What should we call you?"
-                onChange={handleChange}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-12 py-4 text-sm font-bold text-slate-800 outline-none transition-all placeholder:text-slate-300"
-                required
-              />
-            </div>
-          )}
+        <div className="relative z-10 max-w-sm">
+          <Badge className="mb-4 bg-zinc-800 text-zinc-400 hover:bg-zinc-800 transition-none border-none">SYSTEM v3.14</Badge>
+          <h2 className="text-4xl font-bold tracking-tighter leading-none mb-4">Trade with Precision & Speed.</h2>
+          <p className="text-zinc-400 text-base leading-relaxed font-medium">The most powerful marketplace interface ever built. Connect. Execute. Analyze.</p>
+          
+          <div className="mt-10 flex gap-6">
+             <div className="flex flex-col gap-1">
+                <span className="text-2xl font-bold">40ms</span>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Execution Speed</span>
+             </div>
+             <div className="flex flex-col gap-1">
+                <span className="text-2xl font-bold">100%</span>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Direct API Access</span>
+             </div>
+          </div>
+        </div>
 
-          {(mode === "login" || mode === "register" || mode === "forgot") && (
-            <div className="relative flex items-center">
-              <Mail className="absolute left-4 text-slate-300" size={18} />
-              <input
-                name="email"
-                type="email"
-                placeholder="Email address"
-                onChange={handleChange}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-12 py-4 text-sm font-bold text-slate-800 outline-none transition-all placeholder:text-slate-300"
-                required
-              />
-            </div>
-          )}
+        <div className="relative z-10 text-[10px] font-medium text-zinc-500 flex items-center gap-4">
+           <span>Terms of Intelligence</span>
+           <span>&bull;</span>
+           <span>Privacy Protocols</span>
+           <span>&bull;</span>
+           <span>System Status</span>
+        </div>
+      </div>
 
-          {(mode === "login" || mode === "register") && (
-            <div className="relative flex items-center">
-              <Lock className="absolute left-4 text-slate-300" size={18} />
-              <input
-                name="password"
-                type="password"
-                placeholder="Secure Password"
-                onChange={handleChange}
-                className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-12 py-4 text-sm font-bold text-slate-800 outline-none transition-all placeholder:text-slate-300"
-                required
-              />
-            </div>
-          )}
+      {/* Form Side */}
+      <div className="flex items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-sm">
+           <Card className="border-zinc-200 shadow-lg overflow-hidden">
+             <CardHeader className="text-center pb-6 border-b border-zinc-100 bg-white/50 space-y-1">
+                <CardTitle className="text-xl font-bold text-zinc-900 tracking-tight">
+                    {isLogin ? "Welcome Back" : "Create Account"}
+                </CardTitle>
+                <CardDescription className="text-zinc-500 font-medium italic text-xs">
+                    {isLogin ? "Access your terminal to continue trading" : "Step into the future of marketplace activity"}
+                </CardDescription>
+             </CardHeader>
+             
+             <CardContent className="pt-6 space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  {!isLogin && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Company Name</label>
+                      <div className="relative">
+                        <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
+                        <Input
+                          placeholder="What's your trade name?"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
+                        />
+                      </div>
+                    </div>
+                  )}
 
-          <button className="human-button bg-orange-600 text-white shadow-xl shadow-orange-100 hover:bg-orange-700 w-full flex justify-center py-4 mt-2">
-            <span>
-              {mode === "login" && "Enter Dashboard"}
-              {mode === "register" && "Create My Account"}
-              {mode === "forgot" && "Send Rescue Link"}
-            </span>
-            <ArrowRight size={18} className="ml-2" />
-          </button>
-        </form>
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Protocol</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
+                      <Input
+                        type="email"
+                        placeholder="your@email.com"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
+                      />
+                    </div>
+                  </div>
 
-        <div className="text-center mt-10 space-y-4 relative z-10">
-          {mode === "login" && (
-            <>
-              <p className="text-slate-500 text-sm font-medium">
-                New around here?{" "}
-                <button
-                  className="text-orange-600 font-bold hover:underline"
-                  onClick={() => setMode("register")}
+                  <div className="space-y-1">
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Access Key</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        required
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    disabled={processing}
+                    className="w-full h-12 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-base mt-4 shadow-md shadow-zinc-200"
+                  >
+                    {processing ? (
+                      <Activity className="animate-spin mr-2" />
+                    ) : (
+                      <>
+                        {isLogin ? "Authenticate" : "Initialize Access"}
+                        <ArrowRight className="ml-2" size={16} />
+                      </>
+                    )}
+                  </Button>
+                </form>
+             </CardContent>
+
+             <CardFooter className="pb-8 flex justify-center border-t border-zinc-100 bg-zinc-50/30 py-6">
+                <button 
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors"
                 >
-                  Join us
+                  {isLogin ? "New user? Create an account" : "Already registered? Login here"}
                 </button>
-              </p>
-              <button
-                className="text-slate-400 text-xs font-bold uppercase tracking-widest hover:text-orange-500 transition-colors"
-                onClick={() => setMode("forgot")}
-              >
-                Forgot your key?
-              </button>
-            </>
-          )}
+             </CardFooter>
+           </Card>
 
-          {mode === "register" && (
-            <p className="text-slate-500 text-sm font-medium">
-              Already have an account?{" "}
-              <button
-                className="text-orange-600 font-bold hover:underline"
-                onClick={() => setMode("login")}
-              >
-                Log in
-              </button>
-            </p>
-          )}
-
-          {mode === "forgot" && (
-            <button
-              className="text-orange-600 font-bold hover:underline text-sm"
-              onClick={() => setMode("login")}
-            >
-              Back to Safety
-            </button>
-          )}
+           <div className="mt-8 flex justify-center items-center gap-2 px-4 py-2 bg-zinc-100 rounded-full w-fit mx-auto border border-zinc-200/50">
+              <ShieldCheck className="text-zinc-400" size={14} />
+              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Secure Terminal Session</span>
+           </div>
         </div>
       </div>
     </div>
   );
+}
+
+function Badge({ children, className }) {
+  return (
+    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 ${className}`}>
+      {children}
+    </span>
+  )
 }

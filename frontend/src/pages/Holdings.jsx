@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
-import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, Info, ArrowUpRight, ArrowDownRight, Briefcase, RefreshCw } from "lucide-react";
+import { Wallet, Info, ArrowUpRight, ArrowDownRight, Briefcase, RefreshCw, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Holdings() {
   const [holdings, setHoldings] = useState([]);
@@ -30,7 +32,7 @@ export default function Holdings() {
   };
 
   useEffect(() => {
-    document.title = "Your Wealth Cabinet | Candle";
+    document.title = "Holdings | Candle";
     fetchHoldings();
   }, []);
 
@@ -40,137 +42,111 @@ export default function Holdings() {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="w-full max-w-5xl p-10 bg-white/50 backdrop-blur-md rounded-[3.5rem] shadow-xl animate-pulse border border-orange-50">
-          <div className="h-10 bg-orange-100/50 rounded-full w-1/4 mx-auto mb-16"></div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-56 bg-white/80 rounded-3xl border border-orange-50"></div>
-            ))}
-          </div>
-        </div>
+        <div className="animate-pulse text-zinc-300">Loading your vault...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-32 pb-20">
-      <div className="mx-auto w-full max-w-7xl px-6">
+    <div className="min-h-screen pt-20 pb-12 bg-zinc-50 px-6 tracking-tight">
+      <div className="max-w-7xl mx-auto space-y-8">
 
-        {/* Header - Human Style */}
-        <div className="mb-16 flex flex-col md:flex-row items-end justify-between gap-12">
-          <div className="text-left max-w-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-orange-500 text-white rounded-2xl shadow-lg shadow-orange-100">
-                <Briefcase size={24} />
-              </div>
-              <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Your Wealth Cabinet</h2>
-            </div>
-            <p className="text-slate-500 text-lg font-medium leading-relaxed">
-              This is where your long-term seeds grow. We're keeping an eye on your assets while you focus on what matters.
-            </p>
+        {/* Header Summary */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
+               Holdings <Briefcase size={20} className="text-zinc-400" />
+            </h1>
+            <p className="text-zinc-500 mt-1 text-sm">Your long-term investment portfolio and wealth growth.</p>
           </div>
+          
+          <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+            <Card className="border-zinc-200 shadow-sm min-w-[200px]">
+                <CardContent className="p-5">
+                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Portfolio Value</span>
+                    <div className="text-xl font-bold text-zinc-900 font-mono">
+                        ₹{totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                </CardContent>
+            </Card>
 
-          <div className="soft-card p-10 bg-white min-w-[320px] relative overflow-hidden group">
-            <div className="relative z-10">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Portfolio Value</span>
-              <div className="text-4xl font-black text-slate-900 tracking-tighter mb-4">
-                ₹{totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${totalPnl >= 0 ? 'bg-green-50 text-green-600' : 'bg-rose-50 text-rose-600'}`}>
-                {totalPnl >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-                {totalPnl >= 0 ? '+' : ''}₹{totalPnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-            </div>
-            <Wallet size={80} className="absolute -right-4 -bottom-4 text-slate-50 group-hover:rotate-12 transition-transform duration-700" />
+            <Card className="border-zinc-200 shadow-sm min-w-[200px]">
+                <CardContent className="p-5">
+                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total P&L</span>
+                    <div className={`text-xl font-bold font-mono ${totalPnl >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                        {totalPnl >= 0 ? "+" : ""}₹{totalPnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                </CardContent>
+            </Card>
           </div>
         </div>
 
         {reportTime && (
-          <div className="flex justify-center mb-12">
-            <button
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
               onClick={fetchHoldings}
-              className="flex items-center gap-2 px-6 py-2 rounded-full bg-white border border-orange-100 text-[10px] font-bold text-orange-400 uppercase tracking-[0.2em] hover:bg-orange-50 transition-colors shadow-sm"
+              className="rounded-full text-[10px] font-bold uppercase tracking-widest text-zinc-500"
             >
-              <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
-              Refreshed: {reportTime}
-            </button>
+              <RefreshCw size={12} className={`mr-2 ${loading ? "animate-spin" : ""}`} />
+              Updated: {reportTime}
+            </Button>
           </div>
         )}
 
-        {!loading && holdings.length === 0 && (
-          <div className="text-center py-20 bg-white/50 backdrop-blur-sm rounded-[3rem] border-2 border-dashed border-orange-100 flex flex-col items-center">
-            <div className="w-20 h-20 bg-white shadow-xl shadow-orange-100 rounded-full flex items-center justify-center mb-6">
-              <Briefcase size={32} className="text-orange-300" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-800">Your cabinet is empty</h3>
-            <p className="text-slate-500 mt-2 font-medium">Ready to start your investment journey?</p>
+        {holdings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 bg-white rounded-xl border border-dashed border-zinc-200 text-zinc-400">
+            <Layers size={48} className="mb-4 opacity-10" />
+            <p className="font-medium text-sm">No holdings found in your account.</p>
           </div>
-        )}
-
-        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence mode="popLayout">
-            {holdings.map((h, idx) => {
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {holdings.map((h) => {
               const isProfit = h.pnl >= 0;
               return (
-                <motion.div
-                  key={h.tradingsymbol}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: idx * 0.05 }}
-                  className="soft-card p-8 group flex flex-col justify-between hover:border-orange-200"
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-8">
+                <Card key={h.tradingsymbol} className="border-zinc-200 shadow-sm hover:border-zinc-300 transition-colors">
+                  <CardHeader className="pb-4">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-2xl font-bold text-slate-900 leading-none group-hover:text-orange-600 transition-colors">{h.tradingsymbol}</h3>
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1 block">{h.isin}</span>
+                        <CardTitle className="text-lg font-bold">{h.tradingsymbol}</CardTitle>
+                        <CardDescription className="text-[10px] font-bold text-zinc-400 mt-1 uppercase tracking-tight">{h.isin}</CardDescription>
                       </div>
-                      <div className={`p-2 rounded-xl ${isProfit ? 'bg-green-50 text-green-500' : 'bg-rose-50 text-rose-500'}`}>
-                        {isProfit ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                      <Badge variant={isProfit ? "default" : "destructive"} className="px-2 py-0.5">
+                        {isProfit ? <ArrowUpRight size={12} className="mr-1" /> : <ArrowDownRight size={12} className="mr-1" />}
+                        {((h.pnl / (h.quantity * h.average_price)) * 100).toFixed(1)}%
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 pb-4 border-b border-zinc-50">
+                      <div>
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Quantity</span>
+                        <div className="font-bold text-zinc-900">{h.quantity}</div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold text-zinc-400 uppercase">Avg. Price</span>
+                        <div className="font-bold text-zinc-900">₹{h.average_price.toFixed(2)}</div>
                       </div>
                     </div>
-
-                    <div className="space-y-6">
-                      <div className="flex justify-between items-end">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ownership</span>
-                          <span className="text-xl font-bold text-slate-800">{h.quantity} <span className="text-xs font-medium text-slate-400">Shares</span></span>
-                        </div>
-                        <div className="flex flex-col items-end">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entry</span>
-                          <span className="text-xl font-bold text-slate-800">₹{h.average_price.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>
+                    
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tight">Current P&L</span>
+                        <div className={`text-xl font-bold font-mono ${isProfit ? "text-emerald-600" : "text-rose-600"}`}>
+                          {isProfit ? "+" : ""}₹{h.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </div>
                       </div>
-
-                      <div className="p-6 bg-slate-50/50 rounded-[2rem] border border-slate-100">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Outcome</span>
-                          <div className={`text-xs font-black rounded-full px-2 py-0.5 ${isProfit ? 'bg-green-100 text-green-600' : 'bg-rose-100 text-rose-600'}`}>
-                            {isProfit ? 'GROWING' : 'HOLDING'}
-                          </div>
-                        </div>
-                        <div className={`text-3xl font-black tracking-tight ${isProfit ? 'text-green-600' : 'text-rose-600'}`}>
-                          {isProfit ? '+' : ''}₹{h.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                        </div>
-                      </div>
+                      <Badge variant="secondary" className="uppercase text-[9px]">{h.exchange}</Badge>
                     </div>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center opacity-40 hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Market: {h.exchange}</span>
-                    <Info size={14} className="text-slate-400 cursor-help" />
-                  </div>
-                </motion.div>
+                  </CardContent>
+                </Card>
               );
             })}
-          </AnimatePresence>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
-// Sub-components used
-function TrendingUp({ size, className }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> }
-function TrendingDown({ size, className }) { return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg> }
