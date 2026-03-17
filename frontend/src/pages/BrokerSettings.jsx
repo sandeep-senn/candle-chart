@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function BrokerSettings() {
   const [loading, setLoading] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [status, setStatus] = useState(null);
   const [formData, setFormData] = useState({
     apiKey: "",
@@ -52,6 +53,21 @@ export default function BrokerSettings() {
     }
   };
 
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const res = await api.post("/angel/login");
+      if (res.data.success) {
+        toast.success("Angel One Session Initialized");
+        checkStatus();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed. Check your credentials.");
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   const isConnected = status === "CONNECTED";
 
   return (
@@ -67,20 +83,32 @@ export default function BrokerSettings() {
             <p className="text-zinc-500 mt-1 text-sm">Configure your SmartAPI credentials for direct terminal execution.</p>
           </div>
           
-          <Badge 
-            variant={isConnected ? "default" : "destructive"}
-            className="px-3 py-1 text-xs font-bold shadow-sm"
-          >
-            {isConnected ? (
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={14} /> SYSTEM CONNECTED
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <ShieldAlert size={14} /> SYSTEM DISCONNECTED
-              </div>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            {!isConnected && (
+              <Button 
+                onClick={handleConnect} 
+                disabled={connecting}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-9 px-6 rounded-lg shadow-sm"
+              >
+                {connecting ? <Loader2 size={16} className="animate-spin mr-2" /> : <LinkIcon size={16} className="mr-2" />}
+                Connect Now
+              </Button>
             )}
-          </Badge>
+            <Badge 
+              variant={isConnected ? "default" : "destructive"}
+              className="px-3 py-1 text-xs font-bold shadow-sm h-9 flex items-center"
+            >
+              {isConnected ? (
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={14} /> SYSTEM CONNECTED
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <ShieldAlert size={14} /> SYSTEM DISCONNECTED
+                </div>
+              )}
+            </Badge>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -23,23 +23,33 @@ export const placeOrder = async (req, res) => {
       exchange,
       symbol,
       transactionType,
-      product, // CARRYFORWARD, INTRADAY, MARGIN
-      orderType, // LIMIT, MARKET, STOPLOSS_LIMIT, STOPLOSS_MARKET
+      product, // INTRADAY, DELIVERY, CARRYFORWARD, MARGIN
+      orderType, // MARKET, LIMIT
       quantity,
       price,
       triggerPrice,
-      token // Pass token from frontend instrument search
+      token,
+      variety = "NORMAL"
     } = req.body;
 
-    // Angel One placeOrder params mapping
+    // Map Product Types to Angel One Internal Strings
+    // INTRADAY -> MIS, DELIVERY -> CNC, CARRYFORWARD -> NRML, MARGIN -> MARGIN
+    const productMap = {
+        "INTRADAY": "MIS",
+        "DELIVERY": "CNC",
+        "CARRYFORWARD": "NRML",
+        "MARGIN": "MARGIN"
+    };
+
+    // Angel One placeOrder params mapping (Strictly lowercase as per docs)
     const orderParams = {
-      variety: "NORMAL",
+      variety: variety,
       tradingsymbol: symbol,
       symboltoken: token,
       transactiontype: transactionType,
       exchange: exchange,
       ordertype: orderType,
-      producttype: product,
+      producttype: productMap[product] || product,
       duration: "DAY",
       price: price ? String(price) : "0",
       squareoff: "0",
@@ -71,7 +81,8 @@ export const getOrders = async (req, res) => {
   try {
     const response = await smartApi.getOrderBook();
     if (response.status) {
-        const formatted = response.data.map(o => ({
+        const orders = response.data || [];
+        const formatted = orders.map(o => ({
             ...o,
             tradingsymbol: o.tradingsymbol,
             status: o.status,
@@ -94,7 +105,7 @@ export const getPositions = async (req, res) => {
   try {
     const response = await smartApi.getPosition();
     if (response.status) {
-        res.status(200).json({ success: true, data: response.data });
+        res.status(200).json({ success: true, data: response.data || [] });
     } else {
         res.status(400).json({ success: false, message: response.message });
     }
@@ -111,7 +122,7 @@ export const getHoldings = async (req, res) => {
   try {
     const response = await smartApi.getHolding();
     if (response.status) {
-        res.status(200).json({ success: true, data: response.data });
+        res.status(200).json({ success: true, data: response.data || [] });
     } else {
         res.status(400).json({ success: false, message: response.message });
     }

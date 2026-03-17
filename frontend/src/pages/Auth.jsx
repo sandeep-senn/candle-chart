@@ -33,7 +33,7 @@ export default function Auth() {
       const res = await api.post(endpoint, formData);
       localStorage.setItem("token", res.data.token);
       toast.success(isLogin ? "Welcome back!" : "Account created successfully");
-      navigate("/");
+      navigate("/broker");
     } catch (err) {
       toast.error(err.response?.data?.message || "Authentication failed");
     } finally {

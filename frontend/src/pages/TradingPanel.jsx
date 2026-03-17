@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { io } from "socket.io-client";
+import { SOCKET_URL } from "../config";
 import { 
     Search, Rocket, RotateCcw, TrendingUp, 
     Activity, ShieldCheck 
@@ -17,15 +19,30 @@ export default function TradingPanel() {
     const [results, setResults] = useState([]);
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [quantity, setQuantity] = useState(1);
+    const [orderType, setOrderType] = useState("MARKET"); // MARKET, LIMIT
+    const [product, setProduct] = useState("INTRADAY"); // INTRADAY, DELIVERY, CARRYFORWARD
+    const [transactionType, setTransactionType] = useState("BUY"); // BUY, SELL
+    const [limitPrice, setLimitPrice] = useState("");
     const [targetPrice, setTargetPrice] = useState("");
     const [stopLossPrice, setStopLossPrice] = useState("");
+    const [livePrice, setLivePrice] = useState(null);
     const [margin, setMargin] = useState(null);
     const [loadingMargin, setLoadingMargin] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
 
     useEffect(() => {
         document.title = "Trading Terminal | Candle";
-    }, []);
+        
+        const socket = io(SOCKET_URL);
+        
+        socket.on("price-update", (data) => {
+            if (selectedCompany && data.symbol === selectedCompany.symbol) {
+                setLivePrice(data.ltp);
+            }
+        });
+
+        return () => socket.disconnect();
+    }, [selectedCompany]);
 
     const handleSearch = async (val) => {
         setSearchTerm(val);
@@ -49,16 +66,18 @@ export default function TradingPanel() {
                 symbol: selectedCompany.symbol,
                 exchange: selectedCompany.exchange,
                 quantity: parseInt(quantity),
-                price: selectedCompany.lastPrice || 0,
-                transactionType: "BUY",
+                price: orderType === "LIMIT" ? parseFloat(limitPrice) : (livePrice || 0),
+                transactionType: transactionType,
+                product: product,
+                orderType: orderType
             });
-            setMargin(res.data.data);
+            setMargin(res.data);
         } catch (err) {
             console.error("Margin error", err);
         } finally {
             setLoadingMargin(false);
         }
-    }, [selectedCompany, quantity]);
+    }, [selectedCompany, quantity, orderType, limitPrice, livePrice, transactionType, product]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -69,15 +88,23 @@ export default function TradingPanel() {
 
     const handleExecute = async () => {
         if (!selectedCompany) return toast.error("Please select a company");
+        if (orderType === "LIMIT" && !limitPrice) return toast.error("Please enter a limit price");
+        
         setIsExecuting(true);
         try {
             await api.post("/angel/placeOrder", {
+                exchange: selectedCompany.exchange,
                 symbol: selectedCompany.symbol,
-                qty: quantity,
+                token: selectedCompany.token,
+                transactionType: transactionType,
+                product: product,
+                orderType: orderType,
+                quantity: quantity,
+                price: orderType === "LIMIT" ? limitPrice : "0",
                 target: targetPrice,
                 sl: stopLossPrice
             });
-            toast.success("Order executed successfully");
+            toast.success(`${transactionType} Order placed successfully`);
             handleReset();
         } catch (err) {
             toast.error(err.response?.data?.message || "Execution failed");
@@ -91,9 +118,11 @@ export default function TradingPanel() {
         setSearchTerm("");
         setResults([]);
         setQuantity(1);
+        setLimitPrice("");
         setTargetPrice("");
         setStopLossPrice("");
         setMargin(null);
+        setLivePrice(null);
     };
 
     return (
@@ -124,8 +153,11 @@ export default function TradingPanel() {
                                         key={item.symbol}
                                         onClick={() => {
                                             setSelectedCompany(item);
+                                            setLivePrice(null);
                                             setResults([]);
                                             setSearchTerm(item.symbol);
+                                            // Subscribe via API
+                                            api.post("/subscribe", { tokens: [item.token], exchangeType: item.exchange === "NSE" ? 1 : 3 });
                                         }}
                                         className={`w-full text-left p-3 rounded-md transition-colors ${
                                             selectedCompany?.symbol === item.symbol 
@@ -158,38 +190,102 @@ export default function TradingPanel() {
                                     </CardDescription>
                                 </div>
                                 {selectedCompany && (
-                                    <div className="text-right">
-                                        <div className="text-xl font-mono font-bold text-zinc-900">
-                                            ₹{selectedCompany.lastPrice || "0.00"}
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className="flex gap-1">
+                                            <Button 
+                                                variant={transactionType === "BUY" ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => setTransactionType("BUY")}
+                                                className={`h-7 px-3 text-[10px] font-bold ${transactionType === "BUY" ? "bg-emerald-600 hover:bg-emerald-700" : "text-emerald-600 border-emerald-100 hover:bg-emerald-50"}`}
+                                            >
+                                                BUY
+                                            </Button>
+                                            <Button 
+                                                variant={transactionType === "SELL" ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => setTransactionType("SELL")}
+                                                className={`h-7 px-3 text-[10px] font-bold ${transactionType === "SELL" ? "bg-rose-600 hover:bg-rose-700" : "text-rose-600 border-rose-100 hover:bg-rose-50"}`}
+                                            >
+                                                SELL
+                                            </Button>
                                         </div>
-                                        <Badge variant="secondary" className="mt-1 text-[9px]">LIVE PRICE</Badge>
+                                        <div className="text-right">
+                                            <div className={`text-2xl font-mono font-bold transition-colors ${livePrice ? 'text-emerald-600 animate-pulse' : 'text-zinc-400'}`}>
+                                                ₹{livePrice ? livePrice.toFixed(2) : "Fetching..."}
+                                            </div>
+                                            <Badge variant="secondary" className="mt-1 text-[9px] bg-emerald-100 text-emerald-700">REAL-TIME Ticker</Badge>
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </CardHeader>
 
                         <CardContent className="flex-1 py-6 space-y-8">
-                            {/* Quantity Area */}
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Trading Quantity</label>
-                                <div className="flex flex-col md:flex-row gap-4 items-center">
-                                    <Input
-                                        type="number"
-                                        min="1"
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        className="text-base h-10 w-full md:w-40"
-                                    />
-                                    <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-                                        {[1, 5, 10, 50, 100].map(val => (
-                                            <Button 
-                                                key={val} 
-                                                variant={quantity == val ? "default" : "outline"} 
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Trading Quantity</label>
+                                    <div className="flex flex-col gap-3">
+                                        <Input
+                                            type="number"
+                                            min="1"
+                                            value={quantity}
+                                            onChange={(e) => setQuantity(e.target.value)}
+                                            className="text-base h-10 w-full"
+                                        />
+                                        <div className="flex gap-1 flex-wrap">
+                                            {[1, 5, 10, 50, 100].map(val => (
+                                                <Button 
+                                                    key={val} 
+                                                    variant={quantity == val ? "default" : "outline"} 
+                                                    size="sm"
+                                                    onClick={() => setQuantity(val)}
+                                                    className="min-w-[40px] h-7 text-[10px] px-2"
+                                                >
+                                                    {val}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Order Type</label>
+                                    <div className="flex gap-2">
+                                        {["MARKET", "LIMIT"].map(type => (
+                                            <Button
+                                                key={type}
+                                                variant={orderType === type ? "default" : "outline"}
                                                 size="sm"
-                                                onClick={() => setQuantity(val)}
-                                                className="min-w-[50px] h-8 text-xs"
+                                                onClick={() => setOrderType(type)}
+                                                className="flex-1 h-10 text-xs font-bold"
                                             >
-                                                {val}
+                                                {type}
+                                            </Button>
+                                        ))}
+                                    </div>
+                                    {orderType === "LIMIT" && (
+                                        <Input 
+                                            type="number" 
+                                            placeholder="Limit Price" 
+                                            value={limitPrice}
+                                            onChange={(e) => setLimitPrice(e.target.value)}
+                                            className="h-10 text-sm font-bold border-zinc-300"
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Product</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {["INTRADAY", "DELIVERY", "CARRYFORWARD"].map(p => (
+                                            <Button
+                                                key={p}
+                                                variant={product === p ? "default" : "outline"}
+                                                size="sm"
+                                                onClick={() => setProduct(p)}
+                                                className="flex-1 min-w-[80px] h-10 text-[10px] font-bold"
+                                            >
+                                                {p}
                                             </Button>
                                         ))}
                                     </div>
@@ -260,7 +356,7 @@ export default function TradingPanel() {
                                     className="flex-1 md:min-w-[200px] font-bold"
                                 >
                                     {isExecuting ? <Activity className="animate-spin mr-2" /> : <Rocket className="mr-2" />}
-                                    Execute Trade
+                                    {transactionType == "BUY" ? "Place Buy Order" : "Place Sell Order"}
                                 </Button>
                             </div>
                         </CardFooter>
