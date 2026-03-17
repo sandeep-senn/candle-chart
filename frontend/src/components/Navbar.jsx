@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { 
-  LayoutDashboard, ShoppingCart, Briefcase, BarChart3, 
-  PanelRight, History, Package, ShieldCheck, ChevronDown, 
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard, ShoppingCart, Briefcase, BarChart3,
+  PanelRight, History, Package, ShieldCheck, ChevronDown,
   Layers, Wallet, Menu, X
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -10,10 +10,22 @@ import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Close mobile menu on route change
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem("token"));
+  }, [location.pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    setIsLoggedIn(false);
+    navigate("/auth");
+  };
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
@@ -47,8 +59,7 @@ export default function Navbar() {
             <NavLink
               to="/"
               className={({ isActive }) =>
-                `px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive ? "text-zinc-900 bg-zinc-100" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                `px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? "text-zinc-900 bg-zinc-100" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
                 }`
               }
             >
@@ -56,19 +67,19 @@ export default function Navbar() {
             </NavLink>
 
             {/* Portfolio Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setActiveDropdown('portfolio')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
               <button className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeDropdown === 'portfolio' ? 'text-zinc-900 bg-zinc-100' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'}`}>
-                 Portfolio
-                 <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'portfolio' ? 'rotate-180' : ''}`} />
+                Portfolio
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'portfolio' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               <AnimatePresence>
                 {activeDropdown === 'portfolio' && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
@@ -86,19 +97,19 @@ export default function Navbar() {
             </div>
 
             {/* Trading Dropdown */}
-            <div 
+            <div
               className="relative"
               onMouseEnter={() => setActiveDropdown('trading')}
               onMouseLeave={() => setActiveDropdown(null)}
             >
               <button className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeDropdown === 'trading' ? 'text-zinc-900 bg-zinc-100' : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'}`}>
-                 Trading
-                 <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'trading' ? 'rotate-180' : ''}`} />
+                Trading
+                <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'trading' ? 'rotate-180' : ''}`} />
               </button>
-              
+
               <AnimatePresence>
                 {activeDropdown === 'trading' && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
@@ -118,8 +129,7 @@ export default function Navbar() {
             <NavLink
               to="/history"
               className={({ isActive }) =>
-                `px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive ? "text-zinc-900 bg-zinc-100" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
+                `px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? "text-zinc-900 bg-zinc-100" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50"
                 }`
               }
             >
@@ -127,15 +137,30 @@ export default function Navbar() {
             </NavLink>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
-            <Button asChild variant="outline" size="sm" className="rounded-md font-semibold">
+          <div className="hidden md:flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="rounded-md font-bold px-4 border-zinc-200">
               <NavLink to="/broker">
-                <ShieldCheck size={16} className="mr-2" /> Broker Login
+                <ShieldCheck size={16} className="mr-2 text-emerald-600" /> Angel Login
               </NavLink>
             </Button>
+
+            {isLoggedIn ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="rounded-md font-bold text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button asChild variant="default" size="sm" className="rounded-md font-bold px-6 bg-zinc-900">
+                <NavLink to="/auth">User Login</NavLink>
+              </Button>
+            )}
           </div>
 
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2 text-zinc-600"
           >
@@ -146,7 +171,7 @@ export default function Navbar() {
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -154,7 +179,7 @@ export default function Navbar() {
             >
               <div className="px-6 py-4 flex flex-col gap-1">
                 <NavLink to="/" className="px-4 py-3 rounded-md text-base font-medium text-zinc-900 hover:bg-zinc-50">Dashboard</NavLink>
-                
+
                 <div className="py-2">
                   <div className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Portfolio</div>
                   {PortfolioLinks.map(link => (
@@ -174,7 +199,7 @@ export default function Navbar() {
                 </div>
 
                 <NavLink to="/history" className="px-4 py-3 rounded-md text-base font-medium text-zinc-900 hover:bg-zinc-50">Analytics</NavLink>
-                
+
                 <div className="pt-4 mt-2 border-t border-zinc-100">
                   <NavLink to="/broker" className="flex items-center gap-3 px-4 py-3 rounded-md text-base font-medium text-orange-600 hover:bg-orange-50">
                     <ShieldCheck size={20} /> Broker Login
