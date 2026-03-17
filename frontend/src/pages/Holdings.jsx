@@ -41,38 +41,38 @@ export default function Holdings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-pulse text-zinc-300">Loading your vault...</div>
+      <div className="min-h-screen flex justify-center items-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading your vault...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-12 bg-zinc-50 px-6 tracking-tight">
+    <div className="min-h-screen pt-20 pb-12 bg-background text-foreground px-6 tracking-tight transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* Header Summary */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight flex items-center gap-2">
-               Holdings <Briefcase size={20} className="text-zinc-400" />
+            <h1 className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
+               Holdings <Briefcase size={20} className="text-muted-foreground" />
             </h1>
-            <p className="text-zinc-500 mt-1 text-sm">Your long-term investment portfolio and wealth growth.</p>
+            <p className="text-muted-foreground mt-1 text-sm">Your long-term investment portfolio and wealth growth.</p>
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-            <Card className="border-zinc-200 shadow-sm min-w-[200px]">
+            <Card className="border-border shadow-sm min-w-[200px] bg-card">
                 <CardContent className="p-5">
-                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Portfolio Value</span>
-                    <div className="text-xl font-bold text-zinc-900 font-mono">
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Portfolio Value</span>
+                    <div className="text-xl font-bold text-foreground font-mono">
                         ₹{totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </div>
                 </CardContent>
             </Card>
 
-            <Card className="border-zinc-200 shadow-sm min-w-[200px]">
+            <Card className="border-border shadow-sm min-w-[200px] bg-card">
                 <CardContent className="p-5">
-                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total P&L</span>
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Total P&L</span>
                     <div className={`text-xl font-bold font-mono ${totalPnl >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
                         {totalPnl >= 0 ? "+" : ""}₹{totalPnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </div>
@@ -87,7 +87,7 @@ export default function Holdings() {
               variant="outline"
               size="sm"
               onClick={fetchHoldings}
-              className="rounded-full text-[10px] font-bold uppercase tracking-widest text-zinc-500"
+              className="rounded-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
             >
               <RefreshCw size={12} className={`mr-2 ${loading ? "animate-spin" : ""}`} />
               Updated: {reportTime}
@@ -96,7 +96,7 @@ export default function Holdings() {
         )}
 
         {holdings.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 bg-white rounded-xl border border-dashed border-zinc-200 text-zinc-400">
+          <div className="flex flex-col items-center justify-center py-32 bg-card rounded-xl border border-dashed border-border text-muted-foreground">
             <Layers size={48} className="mb-4 opacity-10" />
             <p className="font-medium text-sm">No holdings found in your account.</p>
           </div>
@@ -105,12 +105,12 @@ export default function Holdings() {
             {holdings.map((h) => {
               const isProfit = h.pnl >= 0;
               return (
-                <Card key={h.tradingsymbol} className="border-zinc-200 shadow-sm hover:border-zinc-300 transition-colors">
+                <Card key={h.tradingsymbol} className="border-border shadow-sm hover:border-primary/20 bg-card transition-all">
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg font-bold">{h.tradingsymbol}</CardTitle>
-                        <CardDescription className="text-[10px] font-bold text-zinc-400 mt-1 uppercase tracking-tight">{h.isin}</CardDescription>
+                        <CardTitle className="text-lg font-bold text-foreground">{h.tradingsymbol}</CardTitle>
+                        <CardDescription className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-tight">{h.isin}</CardDescription>
                       </div>
                       <Badge variant={isProfit ? "default" : "destructive"} className="px-2 py-0.5">
                         {isProfit ? <ArrowUpRight size={12} className="mr-1" /> : <ArrowDownRight size={12} className="mr-1" />}
@@ -133,7 +133,7 @@ export default function Holdings() {
                     
                     <div className="flex justify-between items-end">
                       <div>
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tight">Current P&L</span>
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Current P&L</span>
                         <div className={`text-xl font-bold font-mono ${isProfit ? "text-emerald-600" : "text-rose-600"}`}>
                           {isProfit ? "+" : ""}₹{h.pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                         </div>

@@ -131,19 +131,19 @@ export default function TradingPanel() {
     };
 
     return (
-        <div className="min-h-screen pt-20 pb-12 bg-zinc-50 px-6">
+        <div className="min-h-screen pt-20 pb-12 bg-background text-foreground px-6 transition-colors duration-300">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
                 {/* Search & Discovery */}
                 <div className="lg:col-span-4 space-y-6">
-                    <Card className="border-zinc-200">
+                    <Card className="border-border bg-card">
                         <CardHeader>
                             <CardTitle className="text-lg font-bold">Market Search</CardTitle>
                             <CardDescription>Find instruments to trade across exchanges.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                                 <Input
                                     value={searchTerm}
                                     onChange={(e) => handleSearch(e.target.value)}
@@ -164,10 +164,10 @@ export default function TradingPanel() {
                                             // Subscribe via API
                                             api.post("/subscribe", { tokens: [item.token], exchangeType: item.exchange === "NSE" ? 1 : 3 });
                                         }}
-                                        className={`w-full text-left p-3 rounded-md transition-colors ${
+                                        className={`w-full text-left p-3 rounded-md transition-all ${
                                             selectedCompany?.symbol === item.symbol 
-                                            ? "bg-zinc-900 text-white" 
-                                            : "hover:bg-zinc-100 text-zinc-700 font-medium"
+                                            ? "bg-primary text-primary-foreground shadow-lg" 
+                                            : "hover:bg-accent text-card-foreground font-medium"
                                         }`}
                                     >
                                         <div className="flex justify-between items-center">
@@ -183,8 +183,8 @@ export default function TradingPanel() {
 
                 {/* Execution Terminal */}
                 <div className="lg:col-span-8">
-                    <Card className="border-zinc-200 h-full flex flex-col shadow-sm">
-                        <CardHeader className="border-b border-zinc-100 pb-5">
+                    <Card className="border-border h-full flex flex-col shadow-sm bg-card">
+                        <CardHeader className="border-b border-border pb-5">
                             <div className="flex flex-wrap justify-between items-start gap-4">
                                 <div className="min-w-fit">
                                     <CardTitle className="text-xl font-bold tracking-tight">
@@ -215,10 +215,10 @@ export default function TradingPanel() {
                                             </Button>
                                         </div>
                                         <div className="text-right">
-                                            <div className={`text-2xl font-mono font-bold transition-colors ${livePrice ? 'text-emerald-600 animate-pulse' : 'text-zinc-400'}`}>
+                                            <div className={`text-2xl font-mono font-bold transition-colors ${livePrice ? 'text-emerald-500 animate-pulse' : 'text-muted-foreground'}`}>
                                                 ₹{livePrice ? livePrice.toFixed(2) : "Fetching..."}
                                             </div>
-                                            <Badge variant="secondary" className="mt-1 text-[9px] bg-emerald-100 text-emerald-700">REAL-TIME Ticker</Badge>
+                                            <Badge variant="outline" className="mt-1 text-[9px] border-emerald-500/20 text-emerald-500 bg-emerald-500/5">REAL-TIME Ticker</Badge>
                                         </div>
                                     </div>
                                 )}
@@ -274,7 +274,7 @@ export default function TradingPanel() {
                                             placeholder="Limit Price" 
                                             value={limitPrice}
                                             onChange={(e) => setLimitPrice(e.target.value)}
-                                            className="h-10 text-sm font-bold border-zinc-300"
+                                            className="h-10 text-sm font-bold border-border"
                                         />
                                     )}
                                 </div>
@@ -298,10 +298,10 @@ export default function TradingPanel() {
                             </div>
 
                             {/* Risk Management */}
-                            <div className="bg-black rounded-xl p-6 text-white relative overflow-hidden">
+                            <div className="bg-secondary/30 border border-border rounded-xl p-6 relative overflow-hidden">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <ShieldCheck size={16} className="text-zinc-400" />
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Risk Management</span>
+                                    <ShieldCheck size={16} className="text-primary" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Risk Management</span>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
@@ -331,17 +331,17 @@ export default function TradingPanel() {
                             </div>
                         </CardContent>
 
-                        <CardFooter className="border-t border-zinc-100 py-6 bg-zinc-50/50 flex flex-col sm:flex-row gap-6 items-center justify-between">
+                        <CardFooter className="border-t border-border py-6 bg-secondary/20 flex flex-col sm:flex-row gap-6 items-center justify-between">
                             <div className="flex flex-wrap items-center gap-4 sm:gap-8 justify-center sm:justify-start">
                                 <div>
-                                    <span className="text-[9px] font-bold text-zinc-400 uppercase block mb-1">Estimated Cost</span>
-                                    <div className="text-lg font-bold text-zinc-900">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase block mb-1">Estimated Cost</span>
+                                    <div className="text-lg font-bold text-foreground">
                                         {loadingMargin ? "..." : `₹${margin?.requiredMargin?.toLocaleString() || "0"}`}
                                     </div>
                                 </div>
-                                <div className="h-8 w-px bg-zinc-200 hidden sm:block"></div>
+                                <div className="h-8 w-px bg-border hidden sm:block"></div>
                                 <div>
-                                    <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Margin Status</span>
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase block mb-1">Margin Status</span>
                                     <Badge variant={margin?.allowed ? "default" : "destructive"}>
                                         {margin?.allowed ? "Funds Available" : "Check Balance"}
                                     </Badge>

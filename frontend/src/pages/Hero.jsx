@@ -6,71 +6,81 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 export default function Hero() {
   useEffect(() => {
-    document.title = "Candle | Professional Trading Platform";
+    document.title = "TradeScope | Professional Trading Platform";
   }, []);
 
   return (
-    <section className="relative min-h-[80vh] flex flex-col items-center px-6 pt-24 overflow-hidden bg-white">
-      <div className="flex flex-col justify-center items-center text-center max-w-4xl z-10">
+    <section className="relative min-h-screen flex flex-col items-center px-6 pt-24 overflow-hidden bg-zinc-950">
+      {/* Blurred Candlestick Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img 
+          src="/bg.png" 
+          alt="" 
+          className="w-full h-full object-cover opacity-40 scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/90 via-zinc-950/40 to-zinc-950"></div>
+      </div>
+
+      <div className="flex flex-col justify-center items-center text-center max-w-7xl pt-10 z-10">
         
-        <div className="mb-4 flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-600 text-[10px] font-semibold uppercase tracking-wider">
+        <div className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-white/5 text-zinc-400 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
           <span>Enterprise Grade Trading</span>
         </div>
 
-        <h1 className="text-3xl md:text-5xl font-bold text-zinc-900 leading-tight tracking-tight">
-          Professional Trading <br className="hidden md:block" />
-          for the Modern Investor.
+        <h1 className="text-4xl md:text-6xl font-black text-white leading-[1.1] tracking-tighter">
+          Professional Trading for<br />the <span className="text-yellow-500 drop-shadow-[0_0_15px_rgba(250,204,21,0.3)]">Modern</span> Investor.
         </h1>
 
-        <p className="mt-4 md:mt-6 text-zinc-500 max-w-xl text-base md:text-lg leading-relaxed">
-          Manage your portfolio with high-performance tools, real-time data integration, and enterprise-level security. Built for clarity and efficiency.
+        <p className="mt-6 text-zinc-400 max-w-2xl text-lg md:text-xl leading-relaxed font-medium">
+          Manage your portfolio with high-performance tools, real-time data integration, and institutional-grade security. Built for clarity and speed.
         </p>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
-          <Button asChild size="default" className="rounded-full px-6 font-semibold">
+        <div className="mt-12 flex flex-wrap justify-center gap-5">
+          <Button asChild size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg shadow-2xl shadow-white/5 transition-all bg-background text-foreground border-0">
             <NavLink to="/panel">
-              Open Trading Terminal <ArrowRight size={16} className="ml-2" />
+              Launch Terminal <ArrowRight size={20} className="ml-2" />
             </NavLink>
           </Button>
-          <Button asChild variant="outline" size="default" className="rounded-full px-6 font-semibold">
+          <Button asChild variant="outline" size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg transition-all border-white/10 text-foreground">
             <NavLink to="/baskets">
               View Collections
             </NavLink>
           </Button>
         </div>
 
-        {/* Feature Cards */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-5 w-full max-w-5xl">
-          <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="p-5">
-              <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 mb-2">
-                <TrendingUp size={20} />
+        {/* Feature Cards
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl pb-24">
+          <Card className="border-white/5 shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-b from-white/10 to-transparent backdrop-blur-xl">
+            <CardHeader className="p-8 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 mb-4 border border-emerald-500/20">
+                <TrendingUp size={24} />
               </div>
-              <CardTitle className="text-lg">Fast Execution</CardTitle>
-              <CardDescription className="text-sm">Direct market access with optimized routing.</CardDescription>
+              <CardTitle className="text-xl font-bold text-white">Fast Execution</CardTitle>
+              <CardDescription className="text-zinc-400 text-base font-medium mt-2">Direct market access with optimized low-latency routing for every trade.</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="p-5">
-              <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 mb-2">
-                <ShieldCheck size={20} />
+          <Card className="border-white/5 shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-b from-white/10 to-transparent backdrop-blur-xl">
+            <CardHeader className="p-8 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 mb-4 border border-blue-500/20">
+                <ShieldCheck size={24} />
               </div>
-              <CardTitle className="text-lg">Safe & Secure</CardTitle>
-              <CardDescription className="text-sm">Military-grade encryption for your credentials.</CardDescription>
+              <CardTitle className="text-xl font-bold text-white">Safe & Secure</CardTitle>
+              <CardDescription className="text-zinc-400 text-base font-medium mt-2">Institutional-grade encryption and multi-factor authentication for total peace of mind.</CardDescription>
             </CardHeader>
           </Card>
 
-          <Card className="border-zinc-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="p-5">
-              <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 mb-2">
-                <Heart size={20} />
+          <Card className="border-white/5 shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-b from-white/10 to-transparent backdrop-blur-xl">
+            <CardHeader className="p-8 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center text-rose-500 mb-4 border border-rose-500/20">
+                <Heart size={24} />
               </div>
-              <CardTitle className="text-lg">User Focused</CardTitle>
-              <CardDescription className="text-sm">Intuitive interface designed for performance.</CardDescription>
+              <CardTitle className="text-xl font-bold text-white">User Focused</CardTitle>
+              <CardDescription className="text-zinc-400 text-base font-medium mt-2">An interface designed by traders, for traders. Performance meets simplicity.</CardDescription>
             </CardHeader>
           </Card>
-        </div>
+        </div> */}
       </div>
     </section>
   );

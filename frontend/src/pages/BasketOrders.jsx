@@ -271,12 +271,12 @@ export default function BasketOrders() {
     };
 
     return (
-        <div className="flex h-screen bg-zinc-50 pt-16 px-6 pb-6 gap-6 tracking-tight">
+        <div className="flex h-screen bg-background text-foreground pt-16 px-6 pb-6 gap-6 tracking-tight transition-colors duration-300">
             {/* Sidebar: Collections */}
             <div className="w-72 flex flex-col gap-4">
-                <Card className="flex flex-col flex-1 border-zinc-200 overflow-hidden shadow-sm">
-                    <CardHeader className="p-4 border-b border-zinc-100 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-sm font-bold uppercase tracking-wider text-zinc-500">Collections</CardTitle>
+                <Card className="flex flex-col flex-1 border-border bg-card overflow-hidden shadow-sm">
+                    <CardHeader className="p-4 border-b border-border flex items-center justify-between space-y-0">
+                        <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Collections</CardTitle>
                         <Button 
                             size="icon" 
                             variant="outline" 
@@ -289,7 +289,7 @@ export default function BasketOrders() {
                     
                     <CardContent className="p-1.5 overflow-y-auto space-y-1">
                         {showAddModal && (
-                            <div className="p-3 bg-zinc-50 rounded-lg space-y-2 mb-2 animate-in fade-in zoom-in-95">
+                            <div className="p-3 bg-secondary/50 rounded-lg space-y-2 mb-2 animate-in fade-in zoom-in-95">
                                 <Input 
                                     autoFocus
                                     placeholder="Name..."
@@ -311,15 +311,15 @@ export default function BasketOrders() {
                                 onClick={() => setSelectedBasket(basket)}
                                 className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
                                     selectedBasket?.id === basket.id
-                                    ? "bg-zinc-900 text-white shadow-md font-bold"
-                                    : "hover:bg-zinc-100 text-zinc-600 font-medium"
+                                    ? "bg-primary text-primary-foreground shadow-md font-bold"
+                                    : "hover:bg-accent text-muted-foreground font-medium"
                                 }`}
-                            >
+                            >   
                                 <span className="truncate text-xs font-bold">{basket.name}</span>
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
-                                    className={`h-6 w-6 ${selectedBasket?.id === basket.id ? "hover:bg-zinc-800 text-zinc-400" : "text-zinc-300 hover:text-rose-500"}`}
+                                    className={`h-6 w-6 ${selectedBasket?.id === basket.id ? "hover:bg-primary-foreground/10 hover:text-primary-foreground" : "text-muted-foreground/40 hover:text-rose-500"}`}
                                     onClick={(e) => deleteBasket(basket.id, e)}
                                 >
                                     <Trash size={12} />
@@ -333,18 +333,18 @@ export default function BasketOrders() {
             {/* Main Area: Basket Details */}
             <div className="flex-1">
                 {selectedBasket ? (
-                    <Card className="h-full flex flex-col border-zinc-200 shadow-sm overflow-hidden">
-                        <CardHeader className="p-6 border-b border-zinc-100 flex-col justify-between items-end space-y-0">
+                    <Card className="h-full flex flex-col border-border bg-card shadow-sm overflow-hidden">
+                        <CardHeader className="p-6 border-b border-border flex justify-between space-y-0">
                             <div>
                                 <CardTitle className="text-2xl font-bold tracking-tight">{selectedBasket.name}</CardTitle>
                                 <CardDescription className="font-medium mt-1 text-xs">
                                     {orders.length} orders configured in this collection
                                 </CardDescription>
                             </div>
-                            <div className="text-right space-y-3">
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Required Funds</span>
-                                    <div className="text-xl font-bold text-zinc-900 font-mono">
+                            <div className="text-right flex gap-10 space-y-3">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Required Funds</span>
+                                    <div className="text-xl font-bold text-foreground font-mono">
                                         {calculatingMargin ? "..." : `₹${totalMargin.toLocaleString()}`}
                                     </div>
                                 </div>
@@ -362,19 +362,19 @@ export default function BasketOrders() {
 
                         <CardContent className="p-6 flex-1 overflow-y-auto space-y-6">
                             {/* Order Input Area */}
-                            <div className="bg-zinc-50 p-5 rounded-xl border border-zinc-100 flex flex-wrap gap-3 items-end">
+                            <div className="bg-secondary/20 p-5 rounded-xl border border-border flex flex-wrap gap-3 items-end">
                                 <div className="flex-1 min-w-[180px] space-y-1.5">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Symbol Search</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Symbol Search</label>
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                                         <Input 
                                             placeholder="Search Apple, NIFTY..."
                                             value={searchQuery}
                                             onChange={e => searchSymbols(e.target.value.toUpperCase())}
-                                            className="pl-9 h-10 font-bold text-xs"
+                                            className="pl-9 h-10 font-bold text-xs bg-background"
                                         />
                                         {searchResults.length > 0 && (
-                                            <Card className="absolute top-full left-0 right-0 mt-2 z-50 border-zinc-200 shadow-xl max-h-52 overflow-y-auto p-1">
+                                            <Card className="absolute top-full left-0 right-0 mt-2 z-50 border-border bg-card shadow-xl max-h-52 overflow-y-auto p-1">
                                                 {searchResults.map(res => (
                                                     <Button 
                                                         key={res.symbol}
@@ -392,11 +392,11 @@ export default function BasketOrders() {
                                 </div>
 
                                 <div className="w-28 space-y-1.5">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Type</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Type</label>
                                     <select 
                                         value={form.transaction_type}
                                         onChange={e => setForm({...form, transaction_type: e.target.value})}
-                                        className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white font-bold text-xs focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                                        className="w-full h-10 px-3 rounded-lg border border-border bg-background font-bold text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                                     >
                                         <option value="BUY">BUY</option>
                                         <option value="SELL">SELL</option>
@@ -404,12 +404,12 @@ export default function BasketOrders() {
                                 </div>
 
                                 <div className="w-20 space-y-1.5">
-                                    <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">QTY</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">QTY</label>
                                     <Input 
                                         type="number"
                                         value={form.quantity}
                                         onChange={e => setForm({...form, quantity: e.target.value})}
-                                        className="h-10 font-bold text-xs"
+                                        className="h-10 font-bold text-xs bg-background"
                                     />
                                 </div>
 
@@ -433,21 +433,21 @@ export default function BasketOrders() {
                             {/* Orders List */}
                             <div className="space-y-2">
                                 {orders.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-16 border border-dashed border-zinc-200 rounded-xl text-zinc-400">
+                                    <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border rounded-xl text-muted-foreground">
                                         <ShoppingCart size={24} className="mb-3 opacity-20" />
                                         <p className="font-medium text-xs">Collection is empty. Build your strategy above.</p>
                                     </div>
                                 ) : (
                                     orders.map(o => (
-                                        <div key={o.id} className="flex items-center justify-between p-4 bg-white border border-zinc-200 rounded-xl hover:border-zinc-300 transition-colors shadow-sm group">
+                                        <div key={o.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-primary/20 transition-all shadow-sm group">
                                             <div className="flex items-center gap-4">
                                                 <Badge variant={o.transaction_type === "BUY" ? "default" : "destructive"} className="h-8 w-14 items-center justify-center font-bold tracking-tighter text-[10px]">
                                                     {o.transaction_type}
                                                 </Badge>
                                                 <div>
-                                                    <div className="font-bold text-base text-zinc-900">{o.tradingsymbol}</div>
+                                                    <div className="font-bold text-base text-foreground">{o.tradingsymbol}</div>
                                                     <div className="flex gap-1.5 mt-0.5">
-                                                        <Badge variant="outline" className="text-[9px] h-4 py-0">{o.exchange}</Badge>
+                                                        <Badge variant="outline" className="text-[9px] h-4 py-0 border-border text-muted-foreground">{o.exchange}</Badge>
                                                         <Badge variant="secondary" className="text-[9px] h-4 py-0">{o.product}</Badge>
                                                     </div>
                                                 </div>
@@ -455,8 +455,8 @@ export default function BasketOrders() {
 
                                             <div className="flex items-center gap-6">
                                                 <div className="text-right">
-                                                    <div className="text-sm font-bold text-zinc-900">{o.quantity} SHS</div>
-                                                    <div className="text-[10px] font-medium text-zinc-400">@ {o.order_type === "MARKET" ? "Market" : `₹${o.price}`}</div>
+                                                    <div className="text-sm font-bold text-foreground">{o.quantity} SHS</div>
+                                                    <div className="text-[10px] font-medium text-muted-foreground">@ {o.order_type === "MARKET" ? "Market" : `₹${o.price}`}</div>
                                                 </div>
                                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400" onClick={() => editOrder(o)}>
@@ -474,9 +474,9 @@ export default function BasketOrders() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-white border border-dashed border-zinc-200 rounded-3xl text-zinc-400">
+                    <div className="h-full flex flex-col items-center justify-center bg-card border border-dashed border-border rounded-3xl text-muted-foreground transition-all duration-300">
                         <Plus size={48} className="mb-6 opacity-10" />
-                        <h3 className="text-lg font-bold text-zinc-900">Get Started</h3>
+                        <h3 className="text-lg font-bold text-foreground">Get Started</h3>
                         <p className="font-medium text-sm mt-1">Select or create a collection to manage bulk orders.</p>
                     </div>
                 )}
