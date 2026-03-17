@@ -131,6 +131,9 @@ export const deleteBasketOrder = async (req, res) => {
 
 // --- EXECUTION ---
 
+// Helper for delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // 7. Execute Basket
 export const executeBasket = async (req, res) => {
     try {
@@ -145,18 +148,26 @@ export const executeBasket = async (req, res) => {
 
         if (orders.length === 0) return res.status(400).json({ message: "Basket is empty" });
 
+        const productMap = {
+            "INTRADAY": "MIS",
+            "DELIVERY": "CNC",
+            "CARRYFORWARD": "NRML",
+            "MARGIN": "MARGIN"
+        };
+
         const results = { total: orders.length, success: [], failed: [] };
 
         for (const order of orders) {
             try {
+                // Angel One placeOrder params mapping (Strictly lowercase)
                 const response = await smartApi.placeOrder({
                     variety: "NORMAL",
                     tradingsymbol: order.tradingsymbol,
-                    symboltoken: findTokenBySymbol(order.tradingsymbol) || "0",
+                    symboltoken: await findTokenBySymbol(order.tradingsymbol) || "0",
                     transactiontype: order.transaction_type,
                     exchange: order.exchange,
                     ordertype: order.order_type,
-                    producttype: order.product,
+                    producttype: productMap[order.product] || order.product,
                     duration: "DAY",
                     price: String(order.price || 0),
                     quantity: String(order.quantity)
@@ -170,6 +181,9 @@ export const executeBasket = async (req, res) => {
             } catch (error) {
                 results.failed.push({ id: order.id, symbol: order.tradingsymbol, reason: error.message });
             }
+            
+            // Add 200ms delay to respect 9 RPS (Requests Per Second) limit
+            await delay(200);
         }
 
         res.json({ message: "Basket execution completed", results });
