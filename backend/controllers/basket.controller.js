@@ -173,10 +173,10 @@ export const executeBasket = async (req, res) => {
                     quantity: String(order.quantity)
                 });
 
-                if (response.status) {
+                if (response.status && response.data) {
                     results.success.push({ id: order.id, symbol: order.tradingsymbol, orderId: response.data.orderid });
                 } else {
-                    results.failed.push({ id: order.id, symbol: order.tradingsymbol, reason: response.message });
+                    results.failed.push({ id: order.id, symbol: order.tradingsymbol, reason: response.message || "Broker side error" });
                 }
             } catch (error) {
                 results.failed.push({ id: order.id, symbol: order.tradingsymbol, reason: error.message });

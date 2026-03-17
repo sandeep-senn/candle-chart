@@ -63,10 +63,10 @@ export const placeOrder = async (req, res) => {
 
     const response = await smartApi.placeOrder(orderParams);
 
-    if (response.status) {
+    if (response.status && response.data) {
         res.status(200).json({ success: true, orderId: response.data.orderid });
     } else {
-        res.status(400).json({ success: false, message: response.message });
+        res.status(400).json({ success: false, message: response.message || "Order placement failed at broker side" });
     }
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });
