@@ -10,7 +10,8 @@ export const calculateMargin = async (req, res) => {
       orderType,
       quantity,
       price,
-      triggerPrice
+      triggerPrice,
+      token
     } = req.body;
 
     const userId = req.user?.id || 1;
