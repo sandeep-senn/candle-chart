@@ -185,8 +185,8 @@ export default function TradingPanel() {
                 <div className="lg:col-span-8">
                     <Card className="border-zinc-200 h-full flex flex-col shadow-sm">
                         <CardHeader className="border-b border-zinc-100 pb-5">
-                            <div className="flex justify-between items-start">
-                                <div>
+                            <div className="flex flex-wrap justify-between items-start gap-4">
+                                <div className="min-w-fit">
                                     <CardTitle className="text-xl font-bold tracking-tight">
                                         {selectedCompany ? selectedCompany.symbol : "Terminal Ready"}
                                     </CardTitle>
@@ -195,7 +195,7 @@ export default function TradingPanel() {
                                     </CardDescription>
                                 </div>
                                 {selectedCompany && (
-                                    <div className="flex flex-col items-end gap-2">
+                                    <div className="flex flex-col items-end gap-2 ml-auto">
                                         <div className="flex gap-1">
                                             <Button 
                                                 variant={transactionType === "BUY" ? "default" : "outline"}
@@ -225,10 +225,10 @@ export default function TradingPanel() {
                             </div>
                         </CardHeader>
 
-                        <CardContent className="flex-1 py-6 space-y-8">
+                        <CardContent className="flex-1 py-4 space-y-8">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Trading Quantity</label>
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Trading Quantity</label>
                                     <div className="flex flex-col gap-3">
                                         <Input
                                             type="number"
@@ -244,7 +244,7 @@ export default function TradingPanel() {
                                                     variant={quantity == val ? "default" : "outline"} 
                                                     size="sm"
                                                     onClick={() => setQuantity(val)}
-                                                    className="min-w-[40px] h-7 text-[10px] px-2"
+                                                    className="h-7 text-[10px] px-2"
                                                 >
                                                     {val}
                                                 </Button>
@@ -254,15 +254,15 @@ export default function TradingPanel() {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Order Type</label>
-                                    <div className="flex gap-2">
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Order Type</label>
+                                    <div className="flex gap-4">
                                         {["MARKET", "LIMIT"].map(type => (
                                             <Button
                                                 key={type}
                                                 variant={orderType === type ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => setOrderType(type)}
-                                                className="flex-1 h-10 text-xs font-bold"
+                                                className="flex-1 h-10 text-xs font-medium"
                                             >
                                                 {type}
                                             </Button>
@@ -279,16 +279,16 @@ export default function TradingPanel() {
                                     )}
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Product</label>
+                                <div className="space-y-3"> 
+                                    <label className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Product</label>
                                     <div className="flex flex-wrap gap-2">
-                                        {["INTRADAY", "DELIVERY", "CARRYFORWARD"].map(p => (
+                                        {["INTRADAY", "DELIVERY"].map(p => (
                                             <Button
                                                 key={p}
                                                 variant={product === p ? "default" : "outline"}
                                                 size="sm"
                                                 onClick={() => setProduct(p)}
-                                                className="flex-1 min-w-[80px] h-10 text-[10px] font-bold"
+                                                className="flex-1 min-w-[100px] h-10 text-xs font-medium px-1"
                                             >
                                                 {p}
                                             </Button>
@@ -331,14 +331,15 @@ export default function TradingPanel() {
                             </div>
                         </CardContent>
 
-                        <CardFooter className="border-t border-zinc-100 py-6 bg-zinc-50/50 flex flex-col md:flex-row gap-6 items-center justify-between">
-                            <div className="flex items-center gap-8">
+                        <CardFooter className="border-t border-zinc-100 py-6 bg-zinc-50/50 flex flex-col sm:flex-row gap-6 items-center justify-between">
+                            <div className="flex flex-wrap items-center gap-4 sm:gap-8 justify-center sm:justify-start">
                                 <div>
                                     <span className="text-[9px] font-bold text-zinc-400 uppercase block mb-1">Estimated Cost</span>
                                     <div className="text-lg font-bold text-zinc-900">
                                         {loadingMargin ? "..." : `₹${margin?.requiredMargin?.toLocaleString() || "0"}`}
                                     </div>
                                 </div>
+                                <div className="h-8 w-px bg-zinc-200 hidden sm:block"></div>
                                 <div>
                                     <span className="text-[10px] font-bold text-zinc-400 uppercase block mb-1">Margin Status</span>
                                     <Badge variant={margin?.allowed ? "default" : "destructive"}>
@@ -347,18 +348,18 @@ export default function TradingPanel() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 w-full md:w-auto">
+                            <div className="flex gap-3 w-full sm:w-auto">
                                 <Button 
                                     variant="outline" 
                                     onClick={handleReset}
-                                    className="flex-1 md:flex-none"
+                                    className="flex-1 sm:flex-none"
                                 >
                                     <RotateCcw size={18} className="mr-2" /> Reset
                                 </Button>
                                 <Button 
                                     onClick={handleExecute}
                                     disabled={!selectedCompany || isExecuting}
-                                    className="flex-1 md:min-w-[200px] font-bold"
+                                    className="flex-1 sm:min-w-[160px] font-bold"
                                 >
                                     {isExecuting ? <Activity className="animate-spin mr-2" /> : <Rocket className="mr-2" />}
                                     {transactionType == "BUY" ? "Place Buy Order" : "Place Sell Order"}
