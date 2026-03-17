@@ -37,34 +37,34 @@ export const getHistoricalData = async (req, res) => {
         const inst = getInstrumentBySymbol(symbol);
 
         if (session && inst) {
-            const toDate = new Date();
-            const fromDate = new Date();
-            fromDate.setDate(toDate.getDate() - 30);
-            const formatDate = (d) => d.toISOString().replace('T', ' ').substring(0, 16);
+          const toDate = new Date();
+          const fromDate = new Date();
+          fromDate.setDate(toDate.getDate() - 30);
+          const formatDate = (d) => d.toISOString().replace('T', ' ').substring(0, 16);
 
-            try {
-                const candleRes = await session.smartApi.getCandleData({
-                    exchange: inst.exchange || "NSE",
-                    symboltoken: inst.token,
-                    interval: interval === "day" ? "ONE_DAY" : "ONE_MINUTE",
-                    fromdate: formatDate(fromDate),
-                    todate: formatDate(toDate)
-                });
+          try {
+            const candleRes = await session.smartApi.getCandleData({
+              exchange: inst.exchange || "NSE",
+              symboltoken: inst.token,
+              interval: interval === "day" ? "ONE_DAY" : "ONE_MINUTE",
+              fromdate: formatDate(fromDate),
+              todate: formatDate(toDate)
+            });
 
-                if (candleRes.status && candleRes.data) {
-                    for (const row of candleRes.data) {
-                        await client.query(
-                            `INSERT INTO trading (tradingsymbol, date, interval, open, high, low, close, volume)
+            if (candleRes.status && candleRes.data) {
+              for (const row of candleRes.data) {
+                await client.query(
+                  `INSERT INTO trading (tradingsymbol, date, interval, open, high, low, close, volume)
                              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                              ON CONFLICT (tradingsymbol, date, interval) DO NOTHING`,
-                            [symbol, row[0], interval, row[1], row[2], row[3], row[4], row[5]]
-                        );
-                    }
-                    result = await client.query(finalQuery, params);
-                }
-            } catch (e) {
-                console.error("[Historical] Sync error:", e.message);
+                  [symbol, row[0], interval, row[1], row[2], row[3], row[4], row[5]]
+                );
+              }
+              result = await client.query(finalQuery, params);
             }
+          } catch (e) {
+            console.error("[Historical] Sync error:", e.message);
+          }
         }
       }
 
@@ -128,22 +128,22 @@ export const getPriceData = async (req, res) => {
 };
 
 export const getChartStats = async (req, res) => {
-    try {
-        const { symbol } = req.params;
-        const result = await pool.query(
-            `SELECT 
+  try {
+    const { symbol } = req.params;
+    const result = await pool.query(
+      `SELECT 
                 MAX(high) as high_52w, 
                 MIN(low) as low_52w,
                 AVG(volume) as avg_volume,
                 SUM(volume) as total_volume
              FROM trading 
              WHERE tradingsymbol = $1 AND date > NOW() - INTERVAL '1 year'`,
-            [symbol]
-        );
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false });
-    }
+      [symbol]
+    );
+    res.json({ success: true, data: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
 };
 
 export const healthCheck = async (req, res) => {

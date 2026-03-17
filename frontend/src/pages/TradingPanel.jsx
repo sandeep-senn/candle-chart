@@ -73,7 +73,8 @@ export default function TradingPanel() {
                 price: orderType === "LIMIT" ? parseFloat(limitPrice) : (livePrice || 0),
                 transactionType: transactionType,
                 product: product,
-                orderType: orderType
+                orderType: orderType,
+                token: selectedCompany.token
             });
             setMargin(res.data);
         } catch (err) {
