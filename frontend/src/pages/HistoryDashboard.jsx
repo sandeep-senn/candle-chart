@@ -842,26 +842,6 @@ const HistoryDashboard = () => {
       changePercent,
       
       open: Number(latest.open),
-      
-      
-      
-      
-      
-      
-
-      
-      
-      
-      
-      
-      
-
-      
-      
-      
-      
-      
-
       openn: Number(filteredData[0].open),
       high: Math.max(...highs),
       low: Math.min(...lows),

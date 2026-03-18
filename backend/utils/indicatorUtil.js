@@ -16,7 +16,7 @@ export const calculateIndicators = (data) => {
 
     // SMA & EMA Periods
     const periods = [3, 5, 7, 8, 9, 10, 12, 14, 17, 19, 20, 26, 50, 65, 100, 150, 200, 252, 504, 1260];
-    
+
     // SMA
     periods.forEach(p => {
         if (prices.length >= p) {
@@ -89,7 +89,7 @@ export const calculateIndicators = (data) => {
 
     // MACD (12, 26, 9)
     if (prices.length > 26) {
-        const macd26 = MACD.calculate({ fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, Values: prices, SimpleMAOscillator: false, SimpleMASignal: false });
+        const macd26 = MACD.calculate({ fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, values: prices, SimpleMAOscillator: false, SimpleMASignal: false });
         const offset26 = data.length - macd26.length;
         macd26.forEach((v, i) => {
             data[i + offset26][`macd_line_26`] = v.MACD;

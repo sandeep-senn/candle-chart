@@ -3,9 +3,6 @@ import { getInstrumentBySymbol } from "../services/instrumentService.js";
 import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
 import { calculateIndicators } from "../utils/indicatorUtil.js";
 
-/**
- * Get historical data for a specific symbol
- */
 export const getHistoricalData = async (req, res) => {
   try {
     let { symbol } = req.params;
@@ -16,7 +13,6 @@ export const getHistoricalData = async (req, res) => {
 
     const client = await pool.connect();
     try {
-      // 1. Try Local DB
       let query = `SELECT * FROM trading WHERE tradingsymbol = $1 AND interval = $2`;
       const params = [symbol, interval];
 
@@ -24,42 +20,68 @@ export const getHistoricalData = async (req, res) => {
         query += ` AND date < $3`;
         params.push(to);
       }
+
       query += ` ORDER BY date DESC LIMIT $${params.length + 1}`;
       params.push(limit);
 
       const finalQuery = `SELECT * FROM (${query}) as sub ORDER BY date ASC`;
       let result = await client.query(finalQuery, params);
 
-      // 2. Sync from Angel One if empty
+      // 🔥 FETCH FROM API IF EMPTY
       if (result.rows.length === 0 && !to) {
-        console.log(`[Historical] On-demand sync for ${symbol}`);
+        console.log(`[Historical] Sync for ${symbol}`);
+
         const session = smartApiSessionManager.getSession(userId);
         const inst = getInstrumentBySymbol(symbol);
 
-        if (session && inst) {
-          const toDate = new Date();
-          const fromDate = new Date();
-          fromDate.setDate(toDate.getDate() - 30);
-          const formatDate = (d) => d.toISOString().replace('T', ' ').substring(0, 16);
+        console.log("Instrument:", inst);
 
+        if (session && inst) {
           try {
+            const toDate = new Date();
+            const fromDate = new Date();
+            fromDate.setDate(toDate.getDate() - 30);
+
+            const formatDate = (d) =>
+              d.toISOString().replace("T", " ").substring(0, 16);
+
             const candleRes = await session.smartApi.getCandleData({
               exchange: inst.exchange || "NSE",
               symboltoken: inst.token,
               interval: interval === "day" ? "ONE_DAY" : "ONE_MINUTE",
               fromdate: formatDate(fromDate),
-              todate: formatDate(toDate)
+              todate: formatDate(toDate),
             });
 
-            if (candleRes.status && candleRes.data) {
-              for (const row of candleRes.data) {
+            console.log("Candle API response:", candleRes);
+
+            const candles =
+              candleRes?.data?.candles ||
+              candleRes?.data ||
+              [];
+
+            if (!Array.isArray(candles) || candles.length === 0) {
+              console.warn("No candle data received");
+            } else {
+              for (const row of candles) {
                 await client.query(
-                  `INSERT INTO trading (tradingsymbol, date, interval, open, high, low, close, volume)
-                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                             ON CONFLICT (tradingsymbol, date, interval) DO NOTHING`,
-                  [symbol, row[0], interval, row[1], row[2], row[3], row[4], row[5]]
+                  `INSERT INTO trading 
+                  (tradingsymbol, date, interval, open, high, low, close, volume)
+                  VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+                  ON CONFLICT (tradingsymbol, date, interval) DO NOTHING`,
+                  [
+                    symbol,
+                    row[0],
+                    interval,
+                    row[1],
+                    row[2],
+                    row[3],
+                    row[4],
+                    row[5],
+                  ]
                 );
               }
+
               result = await client.query(finalQuery, params);
             }
           } catch (e) {
@@ -68,14 +90,17 @@ export const getHistoricalData = async (req, res) => {
         }
       }
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ success: false, message: "Data not available. Login to Angel One to sync." });
+      // 🔥 SAFE CHECK
+      if (!result.rows || result.rows.length === 0) {
+        return res.json([]);
       }
 
-      const processedData = calculateIndicators(result.rows.map(row => ({
+      const formatted = result.rows.map((row) => ({
         ...row,
-        date: new Date(row.date).toISOString()
-      })));
+        date: new Date(row.date).toISOString(),
+      }));
+
+      const processedData = calculateIndicators(formatted);
 
       res.json(processedData);
     } finally {
