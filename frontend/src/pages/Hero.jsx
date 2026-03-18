@@ -16,20 +16,20 @@ export default function Hero() {
         <img 
           src="/bg.png" 
           alt="" 
-          className="w-full h-full object-cover opacity-40 scale-105"
+          className="w-full h-full object-cover opacity-70 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/90 via-zinc-950/40 to-zinc-950"></div>
       </div>
 
       <div className="flex flex-col justify-center items-center text-center max-w-7xl pt-10 z-10">
         
-        <div className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-zinc-900 border border-white/5 text-zinc-400 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
+        <div className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-zinc-400 text-[10px] font-bold uppercase tracking-widest backdrop-blur-md">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
           <span>Enterprise Grade Trading</span>
         </div>
 
         <h1 className="text-4xl md:text-6xl font-black text-white leading-[1.1] tracking-tighter">
-          Professional Trading for<br />the <span className="text-yellow-500 drop-shadow-[0_0_15px_rgba(250,204,21,0.3)]">Modern</span> Investor.
+          Professional Trading for<br />the <span className="text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.3)]">Modern</span> Investor.
         </h1>
 
         <p className="mt-6 text-zinc-400 max-w-2xl text-lg md:text-xl leading-relaxed font-medium">
@@ -37,12 +37,12 @@ export default function Hero() {
         </p>
 
         <div className="mt-12 flex flex-wrap justify-center gap-5">
-          <Button asChild size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg shadow-2xl shadow-white/5 transition-all bg-background text-foreground border-0">
+          <Button asChild size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg shadow-2xl shadow-emerald-900/20 transition-all bg-blue-800 hover:bg-blue-800 text-white border-0">
             <NavLink to="/panel">
               Launch Terminal <ArrowRight size={20} className="ml-2" />
             </NavLink>
           </Button>
-          <Button asChild variant="outline" size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg transition-all border-white/10 text-foreground">
+          <Button asChild variant="outline" size="lg" className="rounded-2xl bg-black px-10 py-8 font-bold text-lg transition-all border-white/10 text-white backdrop-blur-md">
             <NavLink to="/baskets">
               View Collections
             </NavLink>

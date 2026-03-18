@@ -3,16 +3,14 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Briefcase, BarChart3,
   PanelRight, History, Package, ShieldCheck, ChevronDown,
-  Layers, Wallet, Menu, X, Sun, Moon
+  Layers, Wallet, Menu, X
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useTheme } from "../context/ThemeContext";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,7 +30,7 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  if (location.pathname === "/auth" || location.pathname === "/history" ) return null;
+  if (location.pathname === "/auth" || location.pathname === "/history") return null;
 
   const PortfolioLinks = [
     { to: "/orders", label: "Orders", icon: <ShoppingCart size={16} /> },
@@ -52,18 +50,18 @@ const isDarkPage = location.pathname === "/";
       <div className={`fixed top-0 left-0 right-0 z-[110] transition-all duration-300 border-b ${
         isDarkPage 
           ? "bg-zinc-950/50 backdrop-blur-md border-white/5" 
-          : "bg-background/80 backdrop-blur-md border-border"
+          : "bg-white border-zinc-200"
       }`}>
         {/* Desktop Navbar */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-2">
             <div className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
-              isDarkPage ? "bg-white text-zinc-900" : "bg-primary text-primary-foreground"
+              isDarkPage ? "bg-white text-zinc-900" : "bg-zinc-900 text-white"
             }`}>
               <LayoutDashboard size={14} />
             </div>
             <span className={`font-bold text-base tracking-tight transition-colors ${
-              isDarkPage ? "text-white" : "text-foreground"
+              isDarkPage ? "text-white" : "text-zinc-900"
             }`}>TradeScope</span>
           </NavLink>
 
@@ -73,8 +71,8 @@ const isDarkPage = location.pathname === "/";
               className={({ isActive }) =>
                 `px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   isActive 
-                    ? (isDarkPage ? "text-white bg-white/10" : "text-foreground bg-secondary") 
-                    : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")
+                    ? (isDarkPage ? "text-white bg-white/10" : "text-zinc-900 bg-zinc-100") 
+                    : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50")
                 }`
               }
             >
@@ -89,8 +87,8 @@ const isDarkPage = location.pathname === "/";
             >
               <button className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeDropdown === 'portfolio' 
-                  ? (isDarkPage ? "text-white bg-white/10" : "text-foreground bg-secondary") 
-                  : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")
+                  ? (isDarkPage ? "text-white bg-white/10" : "text-zinc-900 bg-zinc-100") 
+                  : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50")
               }`}>
                  Portfolio
                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'portfolio' ? 'rotate-180' : ''}`} />
@@ -129,8 +127,8 @@ const isDarkPage = location.pathname === "/";
             >
               <button className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 activeDropdown === 'trading' 
-                  ? (isDarkPage ? "text-white bg-white/10" : "text-foreground bg-secondary") 
-                  : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")
+                  ? (isDarkPage ? "text-white bg-white/10" : "text-zinc-900 bg-zinc-100") 
+                  : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50")
               }`}>
                  Trading
                  <ChevronDown size={14} className={`transition-transform duration-200 ${activeDropdown === 'trading' ? 'rotate-180' : ''}`} />
@@ -166,8 +164,8 @@ const isDarkPage = location.pathname === "/";
               className={({ isActive }) =>
                 `px-4 py-2 rounded-md text-sm font-medium transition-all ${
                   isActive 
-                    ? (isDarkPage ? "text-white bg-white/10" : "text-foreground bg-secondary") 
-                    : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary/50")
+                    ? (isDarkPage ? "text-white bg-white/10" : "text-zinc-900 bg-zinc-100") 
+                    : (isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50")
                 }`
               }
             >
@@ -176,19 +174,8 @@ const isDarkPage = location.pathname === "/";
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className={`rounded-md transition-all ${
-                isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              }`}
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </Button>
-
             <Button asChild variant="outline" size="sm" className={`rounded-md font-bold px-4 transition-all ${
-              isDarkPage ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-border bg-background text-foreground hover:bg-secondary"
+              isDarkPage ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-zinc-200"
             }`}>
               <NavLink to="/broker">
                 <ShieldCheck size={16} className={`mr-2 ${isDarkPage ? "text-emerald-400" : "text-emerald-600"}`} /> Angel Login
@@ -201,14 +188,14 @@ const isDarkPage = location.pathname === "/";
                 size="sm" 
                 onClick={handleLogout}
                 className={`rounded-md font-bold transition-all ${
-                  isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  isDarkPage ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
                 }`}
                >
                  Logout
                </Button>
             ) : (
                <Button asChild variant="default" size="sm" className={`rounded-md font-bold px-6 transition-all ${
-                 isDarkPage ? "bg-white text-zinc-900 hover:bg-zinc-200" : "bg-primary text-primary-foreground hover:bg-primary/90"
+                 isDarkPage ? "bg-white text-zinc-900 hover:bg-zinc-200" : "bg-zinc-900 text-white"
                }`}>
                  <NavLink to="/auth">User Login</NavLink>
                </Button>
@@ -217,9 +204,7 @@ const isDarkPage = location.pathname === "/";
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden p-2 transition-colors ${
-              isDarkPage ? "text-white hover:text-zinc-300" : "text-foreground hover:text-primary"
-            }`}
+            className="md:hidden p-2 text-zinc-600"
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -232,10 +217,10 @@ const isDarkPage = location.pathname === "/";
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-               className="md:hidden border-t border-border bg-card overflow-hidden"
+              className="md:hidden border-t border-zinc-200 bg-white overflow-hidden"
             >
               <div className="px-6 py-4 flex flex-col gap-1">
-                 <NavLink to="/" className="px-4 py-3 rounded-md text-base font-medium text-foreground hover:bg-secondary transition-colors">Dashboard</NavLink>
+                <NavLink to="/" className="px-4 py-3 rounded-md text-base font-medium text-zinc-900 hover:bg-zinc-50">Dashboard</NavLink>
 
                 <div className="py-2">
                   <div className="px-4 text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Portfolio</div>
@@ -255,10 +240,10 @@ const isDarkPage = location.pathname === "/";
                   ))}
                 </div>
 
-                 <NavLink to="/history" className="px-4 py-3 rounded-md text-base font-medium text-foreground hover:bg-secondary transition-colors">Analytics</NavLink>
+                <NavLink to="/history" className="px-4 py-3 rounded-md text-base font-medium text-zinc-900 hover:bg-zinc-50">Analytics</NavLink>
 
-                <div className="pt-4 mt-2 border-t border-border">
-                   <NavLink to="/broker" className="flex items-center gap-3 px-4 py-3 rounded-md text-base font-medium text-emerald-600 hover:bg-emerald-600/10 transition-colors">
+                <div className="pt-4 mt-2 border-t border-zinc-100">
+                  <NavLink to="/broker" className="flex items-center gap-3 px-4 py-3 rounded-md text-base font-medium text-orange-600 hover:bg-orange-50">
                     <ShieldCheck size={20} /> Broker Login
                   </NavLink>
                 </div>

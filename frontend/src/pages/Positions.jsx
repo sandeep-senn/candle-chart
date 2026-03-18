@@ -36,30 +36,30 @@ export default function Positions() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 px-6 flex justify-center bg-background">
-        <Activity className="animate-spin text-muted-foreground" size={32} />
+      <div className="min-h-screen pt-32 px-6 flex justify-center">
+        <Activity className="animate-spin text-zinc-300" size={32} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-12 bg-background text-foreground px-6 transition-colors duration-300">
+    <div className="min-h-screen pt-20 pb-12 bg-zinc-50 px-6">
       <div className="max-w-7xl mx-auto space-y-8 tracking-tight">
         
         {/* Header Summary */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Active Positions</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Real-time performance tracking of your live trades.</p>
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Active Positions</h1>
+            <p className="text-zinc-500 mt-1 text-sm">Real-time performance tracking of your live trades.</p>
           </div>
           
-          <Card className="border-border shadow-sm w-full md:w-auto bg-card">
+          <Card className="border-zinc-200 shadow-sm w-full md:w-auto">
             <CardContent className="p-5 flex items-center gap-5">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground">
+              <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-900">
                   <Wallet size={18} />
               </div>
               <div className="text-right">
-                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Total Returns Today</span>
+                <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">Total Returns Today</span>
                 <div className={`text-xl font-bold font-mono ${totalPnl >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
                   {totalPnl >= 0 ? "+" : ""}₹{totalPnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
@@ -74,11 +74,11 @@ export default function Positions() {
             {positions.map((p) => {
               const isProfit = Number(p.pnl) >= 0;
               return (
-                <Card key={p.symbol} className="border-border shadow-sm hover:border-primary/20 bg-card transition-all">
+                <Card key={p.symbol} className="border-zinc-200 shadow-sm hover:border-zinc-300 transition-colors">
                   <CardHeader className="pb-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg font-bold text-foreground">{p.tradingsymbol}</CardTitle>
+                        <CardTitle className="text-lg font-bold">{p.tradingsymbol}</CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-1">
                           <Badge variant="outline" className="text-[10px] py-0">{p.exchange}</Badge>
                           <Badge variant="secondary" className="text-[10px] py-0">{p.product}</Badge>
@@ -105,12 +105,12 @@ export default function Positions() {
                     
                     <div className="flex justify-between items-end">
                       <div>
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight">Current Returns</span>
-                        <div className={`text-xl font-bold font-mono ${isProfit ? "text-emerald-500" : "text-rose-500"}`}>
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-tight">Current Returns</span>
+                        <div className={`text-xl font-bold font-mono ${isProfit ? "text-emerald-600" : "text-rose-600"}`}>
                           {isProfit ? "+" : ""}₹{Number(p.pnl).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </div>
                       </div>
-                      <div className={`p-1.5 rounded-lg ${isProfit ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}>
+                      <div className={`p-1.5 rounded-lg ${isProfit ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"}`}>
                           {isProfit ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
                       </div>
                     </div>
@@ -120,10 +120,10 @@ export default function Positions() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 bg-card rounded-xl border border-dashed border-border transition-all duration-300">
-            <LayoutDashboard className="text-muted-foreground/20 mb-4" size={48} />
-            <span className="text-muted-foreground font-medium">No active positions found.</span>
-            <Button asChild variant="link" className="mt-2 text-primary" onClick={() => (window.location.href='/panel')}>
+          <div className="flex flex-col items-center justify-center py-32 bg-white rounded-xl border border-dashed border-zinc-200">
+            <LayoutDashboard className="text-zinc-200 mb-4" size={48} />
+            <span className="text-zinc-500 font-medium">No active positions found.</span>
+            <Button asChild variant="link" className="mt-2" onClick={() => (window.location.href='/panel')}>
                Go to Trading Panel
             </Button>
           </div>

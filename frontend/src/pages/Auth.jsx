@@ -45,7 +45,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-background text-foreground tracking-tight transition-colors duration-300">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-zinc-50 tracking-tight">
       
       {/* Visual Side */}
       <div className="hidden lg:flex flex-col justify-between p-12 bg-zinc-900 text-white relative overflow-hidden">
@@ -59,7 +59,7 @@ export default function Auth() {
         </div>
 
         <div className="relative z-10 max-w-sm">
-          <Badge className="mb-4 bg-primary/20 text-primary hover:bg-primary/20 transition-none border-none">SYSTEM v3.14</Badge>
+          <Badge className="mb-4 bg-zinc-800 text-zinc-400 hover:bg-zinc-800 transition-none border-none">SYSTEM v3.14</Badge>
           <h2 className="text-4xl font-bold tracking-tighter leading-none mb-4">Trade with Precision & Speed.</h2>
           <p className="text-zinc-400 text-base leading-relaxed font-medium">The most powerful marketplace interface ever built. Connect. Execute. Analyze.</p>
           
@@ -85,14 +85,14 @@ export default function Auth() {
       </div>
 
       {/* Form Side */}
-      <div className="flex items-center justify-center p-6 md:p-10 bg-background transition-colors duration-300">
+      <div className="flex items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm">
-           <Card className="border-border shadow-lg overflow-hidden bg-card">
-             <CardHeader className="text-center pb-6 border-b border-border bg-card/50 space-y-1">
-                <CardTitle className="text-xl font-bold text-foreground tracking-tight">
+           <Card className="border-zinc-200 shadow-lg overflow-hidden">
+             <CardHeader className="text-center pb-6 border-b border-zinc-100 bg-white/50 space-y-1">
+                <CardTitle className="text-xl font-bold text-zinc-900 tracking-tight">
                     {isLogin ? "Welcome Back" : "Create Account"}
                 </CardTitle>
-                <CardDescription className="text-muted-foreground font-medium italic text-xs">
+                <CardDescription className="text-zinc-500 font-medium italic text-xs">
                     {isLogin ? "Access your terminal to continue trading" : "Step into the future of marketplace activity"}
                 </CardDescription>
              </CardHeader>
@@ -101,46 +101,46 @@ export default function Auth() {
                 <form onSubmit={handleSubmit} className="space-y-3">
                   {!isLogin && (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Company Name</label>
+                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Company Name</label>
                       <div className="relative">
-                        <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                        <Activity className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
                         <Input
                           placeholder="What's your trade name?"
                           required
                           value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="pl-12 h-11 rounded-lg text-foreground font-medium bg-background border-border"
+                          className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
                         />
                       </div>
                     </div>
                   )}
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Email Protocol</label>
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Protocol</label>
                     <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
                       <Input
                         type="email"
                         placeholder="your@email.com"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="pl-12 h-11 rounded-lg text-foreground font-medium bg-background border-border"
+                        className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Access Key</label>
+                    <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Access Key</label>
                     <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />
                       <Input
                         type="password"
                         placeholder="••••••••"
                         required
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="pl-12 h-11 rounded-lg text-foreground font-medium bg-background border-border"
+                        className="pl-12 h-11 rounded-lg text-zinc-900 font-medium placeholder:text-zinc-300"
                       />
                     </div>
                   </div>
@@ -148,7 +148,7 @@ export default function Auth() {
                   <Button 
                     type="submit" 
                     disabled={processing}
-                    className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base mt-4 shadow-md"
+                    className="w-full h-12 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-base mt-4 shadow-md shadow-zinc-200"
                   >
                     {processing ? (
                       <Activity className="animate-spin mr-2" />
@@ -162,19 +162,19 @@ export default function Auth() {
                 </form>
              </CardContent>
 
-             <CardFooter className="pb-8 flex justify-center border-t border-border bg-secondary/20 py-6">
+             <CardFooter className="pb-8 flex justify-center border-t border-zinc-100 bg-zinc-50/30 py-6">
                 <button 
                   onClick={() => setIsLogin(!isLogin)}
-                  className="text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-bold text-zinc-500 hover:text-zinc-900 transition-colors"
                 >
                   {isLogin ? "New user? Create an account" : "Already registered? Login here"}
                 </button>
              </CardFooter>
            </Card>
 
-           <div className="mt-8 flex justify-center items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full w-fit mx-auto border border-border">
-              <ShieldCheck className="text-muted-foreground" size={14} />
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Secure Terminal Session</span>
+           <div className="mt-8 flex justify-center items-center gap-2 px-4 py-2 bg-zinc-100 rounded-full w-fit mx-auto border border-zinc-200/50">
+              <ShieldCheck className="text-zinc-400" size={14} />
+              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Secure Terminal Session</span>
            </div>
         </div>
       </div>

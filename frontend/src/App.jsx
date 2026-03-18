@@ -12,13 +12,11 @@ import HistoryDashboard from "./pages/HistoryDashboard";
 import BasketOrders from "./pages/BasketOrders";
 import BrokerSettings from "./pages/BrokerSettings";
 import { ToastContainer } from 'react-toastify';
-import { ThemeProvider } from "./context/ThemeContext";
-import { TooltipProvider } from "./components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <TooltipProvider>
+    <TooltipProvider>
       <div className="min-h-screen relative overflow-x-hidden font-sans">
 
       <Navbar />
@@ -125,7 +123,6 @@ export default function App() {
 
       </Routes>
     </div>
-      </TooltipProvider>
-    </ThemeProvider>
+    </TooltipProvider>
   );
 }
