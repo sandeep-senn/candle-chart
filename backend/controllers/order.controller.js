@@ -32,24 +32,15 @@ export const placeOrder = async (req, res) => {
       variety = "NORMAL"
     } = req.body;
 
-    // Map Product Types to Angel One Internal Strings
-    // INTRADAY -> MIS, DELIVERY -> CNC, CARRYFORWARD -> NRML, MARGIN -> MARGIN
-    const productMap = {
-        "INTRADAY": "MIS",
-        "DELIVERY": "CNC",
-        "CARRYFORWARD": "NRML",
-        "MARGIN": "MARGIN"
-    };
-
     // Angel One placeOrder params mapping (Strictly lowercase as per docs)
     const orderParams = {
       variety: variety,
       tradingsymbol: symbol,
-      symboltoken: token,
+      symboltoken: String(token),
       transactiontype: transactionType,
       exchange: exchange,
       ordertype: orderType,
-      producttype: productMap[product] || product,
+      producttype: product,
       duration: "DAY",
       price: price ? String(price) : "0",
       squareoff: "0",
@@ -62,7 +53,7 @@ export const placeOrder = async (req, res) => {
     }
 
     const response = await smartApi.placeOrder(orderParams);
-
+    
     if (response.status && response.data) {
         res.status(200).json({ success: true, orderId: response.data.orderid });
     } else {
