@@ -31,7 +31,7 @@ export const getHistoricalData = async (req, res) => {
       if (result.rows.length === 0 && !to) {
         console.log(`[Historical] Sync for ${symbol}`);
 
-        const session = smartApiSessionManager.getSession(userId);
+        const session = await smartApiSessionManager.getOrRestoreSession(userId);
         const inst = getInstrumentBySymbol(symbol);
 
         console.log("Instrument:", inst);

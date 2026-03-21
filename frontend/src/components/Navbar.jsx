@@ -3,8 +3,9 @@ import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingCart, Briefcase, BarChart3,
   PanelRight, History, Package, ShieldCheck, ChevronDown,
-  Layers, Wallet, Menu, X
+  Layers, Wallet, Menu, X, AlertTriangle
 } from "lucide-react";
+import { useBroker } from "../context/BrokerContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isConnected } = useBroker();
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem("token"));
@@ -47,7 +49,14 @@ const isDarkPage = location.pathname === "/";
 
   return (
     <>
-      <div className={`fixed top-0 left-0 right-0 z-[110] transition-all duration-300 border-b ${
+      {isLoggedIn && !isConnected && (
+        <div className="bg-red-500 text-white text-xs font-semibold py-1.5 px-4 text-center z-[120] relative flex items-center justify-center gap-2">
+          <AlertTriangle size={14} />
+          <span>Angel One is disconnected. Trading is disabled.</span>
+          <NavLink to="/broker" className="underline ml-2 hover:text-red-100">Reconnect</NavLink>
+        </div>
+      )}
+      <div className={`fixed ${isLoggedIn && !isConnected ? 'top-7' : 'top-0'} left-0 right-0 z-[110] transition-all duration-300 border-b ${
         isDarkPage 
           ? "bg-zinc-950/50 backdrop-blur-md border-white/5" 
           : "bg-white border-zinc-200"

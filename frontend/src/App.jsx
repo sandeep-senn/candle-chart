@@ -13,11 +13,13 @@ import BasketOrders from "./pages/BasketOrders";
 import BrokerSettings from "./pages/BrokerSettings";
 import { ToastContainer } from 'react-toastify';
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrokerProvider } from "./context/BrokerContext";
 
 export default function App() {
   return (
-    <TooltipProvider>
-      <div className="min-h-screen relative overflow-x-hidden font-sans">
+    <BrokerProvider>
+      <TooltipProvider>
+        <div className="min-h-screen relative overflow-x-hidden font-sans">
 
       <Navbar />
       <ToastContainer
@@ -121,8 +123,9 @@ export default function App() {
           }
         />
 
-      </Routes>
-    </div>
-    </TooltipProvider>
+        </Routes>
+      </div>
+      </TooltipProvider>
+    </BrokerProvider>
   );
 }

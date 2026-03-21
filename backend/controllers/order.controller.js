@@ -3,9 +3,9 @@ import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
 /**
  * Helper to get Angel One smartApi instance or return error
  */
-const getAngelInstance = (req, res) => {
+const getAngelInstance = async (req, res) => {
   const userId = req.user?.id || 1;
-  const session = smartApiSessionManager.getSession(userId);
+  const session = await smartApiSessionManager.getOrRestoreSession(userId);
   if (!session || !session.smartApi) {
     res.status(403).json({ success: false, message: "Angel One session not active. Please Login." });
     return null;
@@ -15,7 +15,7 @@ const getAngelInstance = (req, res) => {
 
 /* ================= PLACE ORDER ================= */
 export const placeOrder = async (req, res) => {
-  const smartApi = getAngelInstance(req, res);
+  const smartApi = await getAngelInstance(req, res);
   if (!smartApi) return;
 
   try {
@@ -66,7 +66,7 @@ export const placeOrder = async (req, res) => {
 
 /* ================= GET ORDERS ================= */
 export const getOrders = async (req, res) => {
-  const smartApi = getAngelInstance(req, res);
+  const smartApi = await getAngelInstance(req, res);
   if (!smartApi) return;
 
   try {
@@ -90,7 +90,7 @@ export const getOrders = async (req, res) => {
 
 /* ================= GET POSITIONS ================= */
 export const getPositions = async (req, res) => {
-  const smartApi = getAngelInstance(req, res);
+  const smartApi = await getAngelInstance(req, res);
   if (!smartApi) return;
 
   try {
@@ -107,7 +107,7 @@ export const getPositions = async (req, res) => {
 
 /* ================= GET HOLDINGS ================= */
 export const getHoldings = async (req, res) => {
-  const smartApi = getAngelInstance(req, res);
+  const smartApi = await getAngelInstance(req, res);
   if (!smartApi) return;
 
   try {
@@ -124,7 +124,7 @@ export const getHoldings = async (req, res) => {
 
 /* ================= Cancel Order ================ */
 export const cancelOrder = async (req, res) => {
-  const smartApi = getAngelInstance(req, res);
+  const smartApi = await getAngelInstance(req, res);
   if (!smartApi) return;
 
   try {

@@ -1,6 +1,8 @@
 import pkg from "smartapi-javascript";
 const { SmartAPI } = pkg;
 import { authenticator } from "otplib";
+import pool from "../config/db.js";
+import { decrypt } from "../auth/utils/encryption.js";
 
 /**
  * SmartApiSessionManager
@@ -58,6 +60,44 @@ class SmartApiSessionManager {
      */
     getSession(userId) {
         return this.sessions.get(userId);
+    }
+
+    /**
+     * Asynchronously retrieves a session from memory. If missing, attempts to seamlessly reconstruct it from PostgreSQL.
+     */
+    async getOrRestoreSession(userId) {
+        let session = this.getSession(userId);
+        if (session && session.smartApi) {
+            return session;
+        }
+
+        console.log(`[SmartAPI] Session missing in memory for user ${userId}. Attempting DB restore...`);
+        try {
+            const result = await pool.query(
+                "SELECT api_key, client_code, password, totp_secret, jwt_token, refresh_token, feed_token FROM user_angelone_credentials WHERE user_id = $1",
+                [userId]
+            );
+
+            if (result.rows.length === 0) {
+                console.log(`[SmartAPI] DB Restore failed: No credentials found for user ${userId}.`);
+                return null;
+            }
+
+            const creds = result.rows[0];
+            const apiKey = decrypt(creds.api_key);
+            const clientCode = decrypt(creds.client_code);
+            const password = decrypt(creds.password);
+            const totpSecret = decrypt(creds.totp_secret);
+
+            console.log(`[SmartAPI] DB Credentials found. Regenerating session for user ${userId}...`);
+            const newlyRestoredSession = await this.createSession(userId, { apiKey, clientCode, password, totpSecret });
+            
+            // Optionally we could update the latest tokens back to DB using pool here, but createSession might auto regenerate it.
+            return newlyRestoredSession;
+        } catch (error) {
+            console.error(`[SmartAPI] Error restoring session from DB for user ${userId}:`, error.message);
+            return null;
+        }
     }
 
     /**

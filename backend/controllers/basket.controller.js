@@ -3,8 +3,8 @@ import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
 import { findTokenBySymbol } from "../services/instrumentService.js";
 
 // Helper to get Angel One instance
-const getAngelInstance = (userId) => {
-    const session = smartApiSessionManager.getSession(userId);
+const getAngelInstance = async (userId) => {
+    const session = await smartApiSessionManager.getOrRestoreSession(userId);
     return session ? session.smartApi : null;
 };
 
@@ -139,7 +139,7 @@ export const executeBasket = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id || 1;
-        const smartApi = getAngelInstance(userId);
+        const smartApi = await getAngelInstance(userId);
 
         if (!smartApi) return res.status(403).json({ message: "No active Angel One session" });
 
@@ -192,7 +192,7 @@ export const getBasketMargin = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id || 1;
-        const smartApi = getAngelInstance(userId);
+        const smartApi = await getAngelInstance(userId);
 
         if (!smartApi) return res.status(403).json({ message: "No active Angel One session" });
 

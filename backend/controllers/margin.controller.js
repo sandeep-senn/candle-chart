@@ -17,7 +17,7 @@ export const calculateMargin = async (req, res) => {
     const userId = req.user?.id || 1;
 
     // 1. Check for Angel One Session
-    const angelSession = smartApiSessionManager.getSession(userId);
+    const angelSession = await smartApiSessionManager.getOrRestoreSession(userId);
     if (!angelSession || !angelSession.smartApi) {
         return res.status(401).json({
             success: false,

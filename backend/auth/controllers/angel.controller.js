@@ -108,7 +108,7 @@ export const logoutAngel = async (req, res) => {
 export const getAngelStatus = async (req, res) => {
     try {
         const userId = req.user.id;
-        const session = smartApiSessionManager.getSession(userId);
+        const session = await smartApiSessionManager.getOrRestoreSession(userId);
         
         if (session && session.smartApi) {
             res.json({ success: true, status: "CONNECTED" });
