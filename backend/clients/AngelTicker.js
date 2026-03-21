@@ -33,7 +33,8 @@ function setupWebSocket(userId, session, tokenMap) {
         }
         const priceMap = userLivePriceMaps.get(userId);
 
-        const rawSymbol = tokenMap[data.token];
+        const cleanToken = typeof data.token === 'string' ? data.token.replace(/^"|"$/g, '') : data.token;
+        const rawSymbol = tokenMap[cleanToken];
         if (!rawSymbol) return;
 
         const priceData = {
