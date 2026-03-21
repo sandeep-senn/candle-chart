@@ -14,7 +14,7 @@ import orderRoutes from "./routes/order.routes.js";
 import historyRoutes from "./routes/historical.routes.js";
 import basketRoutes from "./routes/basket.routes.js";
 
-import { subscribeToAngelTokens } from "./clients/AngelTicker.js";
+import { subscribeToAngelTokens, reconnectAngelTicker } from "./clients/AngelTicker.js";
 import { protect } from "./auth/utils/util.js";
 
 /* ================= APP INIT ================= */
@@ -55,13 +55,16 @@ app.post("/api/subscribe", protect, async (req, res) => {
   // Angel One subscription needs exchangeType mapping
   // 1=NSE, 2=NFO, 3=BSE, 4=MCX etc.
   if (tokens && tokens.length > 0) {
-    const angelSubData = [
-      {
-        exchangeType: exchangeType || 1, // Default NSE
-        tokens: tokens.map(String)
-      }
-    ];
-    subscribeToAngelTokens(userId, angelSubData);
+    const isAlive = await reconnectAngelTicker(userId);
+    if (isAlive) {
+        const angelSubData = [
+          {
+            exchangeType: exchangeType || 1, // Default NSE
+            tokens: tokens.map(String)
+          }
+        ];
+        subscribeToAngelTokens(userId, angelSubData);
+    }
   }
 
   res.json({ success: true, message: "Subscription request sent to active brokers" });

@@ -13,6 +13,60 @@ const MODE_LTP = 1;
 /**
  * Starts the Angel One Ticker for a specific user.
  */
+function setupWebSocket(userId, session, tokenMap) {
+    const webSocket = new WebSocketV2({
+        clientcode: session.clientCode,
+        jwttoken: session.jwtToken,
+        apikey: session.apiKey,
+        feedtype: session.feedToken
+    });
+
+    webSocket.connect();
+
+    webSocket.on('connect', () => {
+        console.log(`[AngelOne] WebSocket connected for user: ${userId}`);
+    });
+
+    webSocket.on('tick', (data) => {
+        if (!userLivePriceMaps.has(userId)) {
+            userLivePriceMaps.set(userId, {});
+        }
+        const priceMap = userLivePriceMaps.get(userId);
+
+        const rawSymbol = tokenMap[data.token];
+        if (!rawSymbol) return;
+
+        const priceData = {
+            symbol: rawSymbol,
+            instrument_token: data.token,
+            ltp: Number(data.last_traded_price) / 100, 
+            exchange: data.exchange_type,
+            timestamp: new Date().toISOString()
+        };
+
+        priceMap[rawSymbol] = priceData;
+        io.to(`user:${userId}`).emit("price-update", priceData);
+    });
+
+    return webSocket;
+}
+
+export async function reconnectAngelTicker(userId) {
+    console.log(`[AngelOne] Reconnecting user ${userId} ticker...`);
+    const session = await smartApiSessionManager.getOrRestoreSession(userId);
+    if (!session) return false;
+    if (session.stream) return true; // Already connected
+
+    try {
+        const { map: tokenMap } = await loadAngelTokens();
+        session.stream = setupWebSocket(userId, session, tokenMap);
+        return true;
+    } catch (e) {
+        console.error(`[AngelOne] Reconnect ticker failed for user ${userId}:`, e.message);
+        return false;
+    }
+}
+
 export async function startAngelTicker(userId, credentials) {
     try {
         const { apiKey, clientCode, password, totpSecret } = credentials;
@@ -23,43 +77,7 @@ export async function startAngelTicker(userId, credentials) {
 
         // Load Angel One tokens for mapping
         const { map: tokenMap } = await loadAngelTokens();
-
-        const webSocket = new WebSocketV2({
-            clientcode: session.clientCode,
-            jwttoken: session.jwtToken,
-            apikey: apiKey,
-            feedtype: session.feedToken
-        });
-
-        webSocket.connect();
-
-        webSocket.on('connect', () => {
-            console.log(`[AngelOne] WebSocket connected for user: ${userId}`);
-        });
-
-        webSocket.on('tick', (data) => {
-            if (!userLivePriceMaps.has(userId)) {
-                userLivePriceMaps.set(userId, {});
-            }
-            const priceMap = userLivePriceMaps.get(userId);
-
-            const rawSymbol = tokenMap[data.token];
-            if (!rawSymbol) return;
-
-            const priceData = {
-                symbol: rawSymbol,
-                instrument_token: data.token,
-                ltp: Number(data.last_traded_price) / 100, 
-                exchange: data.exchange_type,
-                timestamp: new Date().toISOString()
-            };
-
-            priceMap[rawSymbol] = priceData;
-            io.to(`user:${userId}`).emit("price-update", priceData);
-        });
-
-        session.stream = webSocket;
-
+        session.stream = setupWebSocket(userId, session, tokenMap);
     } catch (error) {
         console.error(`[AngelOne] Failed to start ticker for user ${userId}:`, error.message);
     }

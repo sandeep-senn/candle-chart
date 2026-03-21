@@ -40,7 +40,7 @@ export const calculateMargin = async (req, res) => {
             positions: [{
                 exchange,
                 qty: Number(quantity),
-                price: orderType === "MARKET" ? 0 : Number(price),
+                price: orderType === "MARKET" ? 0 : Number(price) || 0,
                 productType: productMap[product] || product,
                 token,
                 tradeType: transactionType,

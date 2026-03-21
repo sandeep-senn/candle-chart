@@ -40,6 +40,7 @@ class SmartApiSessionManager {
             const session = {
                 smartApi,
                 clientCode,
+                apiKey,
                 feedToken: sessionData.data.feedToken,
                 jwtToken: sessionData.data.jwtToken,
                 refreshToken: sessionData.data.refreshToken,

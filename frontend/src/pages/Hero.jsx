@@ -37,12 +37,12 @@ export default function Hero() {
         </p>
 
         <div className="mt-12 flex flex-wrap justify-center gap-5">
-          <Button asChild size="lg" className="rounded-2xl px-10 py-8 font-bold text-lg shadow-2xl shadow-emerald-900/20 transition-all bg-blue-800 hover:bg-blue-800 text-white border-0">
+          <Button asChild size="lg" className="rounded-xl px-6 py-6 font-bold text-lg shadow-2xl shadow-emerald-900/20 transition-all bg-blue-800 hover:bg-blue-800 text-white border-0">
             <NavLink to="/panel">
               Launch Terminal <ArrowRight size={20} className="ml-2" />
             </NavLink>
           </Button>
-          <Button asChild variant="outline" size="lg" className="rounded-2xl bg-black px-10 py-8 font-bold text-lg transition-all border-white/10 text-white backdrop-blur-md">
+          <Button asChild variant="outline" size="lg" className="rounded-xl bg-black px-6 py-6 font-bold text-lg transition-all border-white/10 text-white backdrop-blur-md">
             <NavLink to="/baskets">
               View Collections
             </NavLink>
