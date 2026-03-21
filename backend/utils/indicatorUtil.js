@@ -97,7 +97,7 @@ export const calculateIndicators = (data) => {
             data[i + offset26][`macd_histogram_26`] = v.histogram;
         });
 
-        const macd17 = MACD.calculate({ fastPeriod: 8, slowPeriod: 17, signalPeriod: 9, Values: prices });
+        const macd17 = MACD.calculate({ fastPeriod: 8, slowPeriod: 17, signalPeriod: 9, values: prices });
         const offset17 = data.length - macd17.length;
         macd17.forEach((v, i) => {
             data[i + offset17][`macd_line_17`] = v.MACD;
