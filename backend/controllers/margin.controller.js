@@ -1,4 +1,5 @@
 import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
+import axios from "axios";
 
 export const calculateMargin = async (req, res) => {
   try {
@@ -36,7 +37,7 @@ export const calculateMargin = async (req, res) => {
     };
 
     try {
-        const response = await smartApi.marginApi({
+        const payload = {
             positions: [{
                 exchange,
                 qty: Number(quantity),
@@ -46,7 +47,27 @@ export const calculateMargin = async (req, res) => {
                 tradeType: transactionType,
                 orderType: orderType
             }]
-        });
+        };
+
+        const config = {
+            method: 'post',
+            url: 'https://apiconnect.angelone.in/rest/secure/angelbroking/margin/v1/batch',
+            headers: { 
+                'X-PrivateKey': angelSession.apiKey, 
+                'Accept': 'application/json', 
+                'X-SourceID': 'WEB', 
+                'X-ClientLocalIP': '192.168.1.1', 
+                'X-ClientPublicIP': '106.193.147.98', 
+                'X-MACAddress': 'fe80::216e:6507:4b90:3719', 
+                'X-UserType': 'USER', 
+                'Authorization': `Bearer ${angelSession.jwtToken}`, 
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(payload)
+        };
+
+        const { data: marginRes } = await axios(config);
+        const response = marginRes;
 
         const rms = await smartApi.getRMS();
         const availableMargin = rms.status ? parseFloat(rms.data.availablecash) : 0;

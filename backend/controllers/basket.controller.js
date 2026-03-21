@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import smartApiSessionManager from "../clients/SmartApiSessionManager.js";
+import axios from "axios";
 import { findTokenBySymbol } from "../services/instrumentService.js";
 
 // Helper to get Angel One instance
@@ -192,9 +193,10 @@ export const getBasketMargin = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id || 1;
-        const smartApi = await getAngelInstance(userId);
+        const angelSession = await smartApiSessionManager.getOrRestoreSession(userId);
 
-        if (!smartApi) return res.status(403).json({ message: "No active Angel One session" });
+        if (!angelSession || !angelSession.smartApi) return res.status(403).json({ message: "No active Angel One session" });
+        const smartApi = angelSession.smartApi;
 
         const ordersResult = await pool.query("SELECT * FROM basket_orders WHERE basket_id = $1", [id]);
         const orders = ordersResult.rows;
@@ -219,8 +221,26 @@ export const getBasketMargin = async (req, res) => {
         let availableMargin = 0;
 
         try {
-            // 1. Get Batch Margin Required
-            const marginRes = await smartApi.marginApi({ positions });
+            // 1. Get Batch Margin Required via raw Axios
+            const payload = { positions };
+            const config = {
+                method: 'post',
+                url: 'https://apiconnect.angelone.in/rest/secure/angelbroking/margin/v1/batch',
+                headers: { 
+                    'X-PrivateKey': angelSession.apiKey, 
+                    'Accept': 'application/json', 
+                    'X-SourceID': 'WEB', 
+                    'X-ClientLocalIP': '192.168.1.1', 
+                    'X-ClientPublicIP': '106.193.147.98', 
+                    'X-MACAddress': 'fe80::216e:6507:4b90:3719', 
+                    'X-UserType': 'USER', 
+                    'Authorization': `Bearer ${angelSession.jwtToken}`, 
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(payload)
+            };
+
+            const { data: marginRes } = await axios(config);
             if (marginRes.status && marginRes.data) {
                 totalRequired = marginRes.data.totalMarginRequired;
             }
