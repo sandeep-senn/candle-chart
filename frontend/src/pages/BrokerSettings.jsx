@@ -84,7 +84,7 @@ export default function BrokerSettings() {
           </div>
           
           <div className="flex flex-col md:flex-row items-center gap-4">
-            {!isConnected ? (
+            {!isConnected && (
               <Button 
                 onClick={handleConnect} 
                 disabled={connecting}
@@ -92,23 +92,6 @@ export default function BrokerSettings() {
               >
                 {connecting ? <Loader2 size={16} className="animate-spin mr-2" /> : <LinkIcon size={16} className="mr-2" />}
                 Connect Now
-              </Button>
-            ) : (
-              <Button 
-                onClick={async () => {
-                  try {
-                    await api.post("/angel/logout");
-                    toast.success("Angel One Session Disconnected");
-                    checkStatus();
-                    window.dispatchEvent(new Event("broker-disconnected"));
-                  } catch (err) {
-                    toast.error("Failed to disconnect");
-                  }
-                }} 
-                variant="destructive"
-                className="font-bold h-9 px-6 rounded-lg shadow-sm"
-              >
-                Disconnect
               </Button>
             )}
             <Badge 
