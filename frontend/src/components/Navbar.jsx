@@ -55,10 +55,10 @@ const isDarkPage = location.pathname === "/";
         {/* Desktop Navbar */}
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <NavLink to="/" className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded flex items-center justify-center transition-colors ${
-              isDarkPage ? "bg-white text-zinc-900" : "bg-zinc-900 text-white"
+            <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center transition-colors ${
+              isDarkPage ? "bg-white/10" : "bg-zinc-100"
             }`}>
-              <LayoutDashboard size={14} />
+              <img src="/logo.png" alt="TradeScope Logo" className="w-full h-full object-cover" />
             </div>
             <span className={`font-bold text-base tracking-tight transition-colors ${
               isDarkPage ? "text-white" : "text-zinc-900"
