@@ -148,26 +148,20 @@ export const executeBasket = async (req, res) => {
 
         if (orders.length === 0) return res.status(400).json({ message: "Basket is empty" });
 
-        const productMap = {
-            "INTRADAY": "MIS",
-            "DELIVERY": "CNC",
-            "CARRYFORWARD": "NRML",
-            "MARGIN": "MARGIN"
-        };
-
         const results = { total: orders.length, success: [], failed: [] };
 
         for (const order of orders) {
             try {
+                const token = await findTokenBySymbol(order.tradingsymbol) || "0";
                 // Angel One placeOrder params mapping (Strictly lowercase)
                 const response = await smartApi.placeOrder({
                     variety: "NORMAL",
                     tradingsymbol: order.tradingsymbol,
-                    symboltoken: await findTokenBySymbol(order.tradingsymbol) || "0",
+                    symboltoken: String(token),
                     transactiontype: order.transaction_type,
                     exchange: order.exchange,
                     ordertype: order.order_type,
-                    producttype: productMap[order.product] || order.product,
+                    producttype: order.product,
                     duration: "DAY",
                     price: String(order.price || 0),
                     quantity: String(order.quantity)
@@ -207,23 +201,19 @@ export const getBasketMargin = async (req, res) => {
 
         if (orders.length === 0) return res.json({ requiredMargin: 0, availableMargin: 0, allowed: true });
 
-        const productMap = {
-            "INTRADAY": "INTRADAY",
-            "DELIVERY": "DELIVERY",
-            "CARRYFORWARD": "CARRYFORWARD",
-            "MARGIN": "MARGIN"
-        };
-
         // Prepare positions for Batch Margin API
-        const positions = await Promise.all(orders.map(async (o) => ({
-            exchange: o.exchange,
-            qty: parseInt(o.quantity),
-            price: o.order_type === "MARKET" ? 0 : parseFloat(o.price),
-            productType: productMap[o.product] || o.product,
-            token: await findTokenBySymbol(o.tradingsymbol) || "0",
-            tradeType: o.transaction_type,
-            orderType: o.order_type
-        })));
+        const positions = await Promise.all(orders.map(async (o) => {
+            const fetchedToken = await findTokenBySymbol(o.tradingsymbol) || "0";
+            return {
+                exchange: o.exchange,
+                qty: parseInt(o.quantity),
+                price: o.order_type === "MARKET" ? 0 : parseFloat(o.price),
+                productType: o.product,
+                token: String(fetchedToken),
+                tradeType: o.transaction_type,
+                orderType: o.order_type
+            };
+        }));
 
         let totalRequired = 0;
         let availableMargin = 0;
