@@ -1,4 +1,5 @@
-import WebSocket from "ws";
+import pkg from "smartapi-javascript";
+const { WebSocketV2 } = pkg;
 import { loadAngelTokens } from "../services/instrumentService.js";
 import { io } from "../server.js";
 import smartApiSessionManager from "./SmartApiSessionManager.js";
@@ -13,76 +14,44 @@ const MODE_LTP = 1;
  * Starts the Angel One Ticker for a specific user.
  */
 function setupWebSocket(userId, session, tokenMap) {
-    // Determine headers
-    const jwtToken = session.jwtToken.startsWith('Bearer') ? session.jwtToken : `Bearer ${session.jwtToken}`;
-
-    const ws = new WebSocket('ws://smartapisocket.angelone.in/smart-stream', {
-        headers: {
-            'Authorization': jwtToken,
-            'x-api-key': session.apiKey,
-            'x-client-code': session.clientCode,
-            'x-feed-token': session.feedToken
-        }
+    const webSocket = new WebSocketV2({
+        clientcode: session.clientCode,
+        jwttoken: session.jwtToken,
+        apikey: session.apiKey,
+        feedtype: session.feedToken
     });
 
-    ws.on('open', () => {
-        console.log(`[AngelOne] Raw WebSocket connected for user: ${userId}`);
+    webSocket.connect();
+
+    webSocket.on('connect', () => {
+        console.log(`[AngelOne] WebSocket connected for user: ${userId}`);
     });
 
-    ws.on('message', (data) => {
-        try {
-            const jsonStr = Buffer.from(data).toString('utf8');
-            const tick = JSON.parse(jsonStr);
-
-            if (tick && tick.ltp && tick.token) {
-                if (!userLivePriceMaps.has(userId)) {
-                    userLivePriceMaps.set(userId, {});
-                }
-                const priceMap = userLivePriceMaps.get(userId);
-
-                const rawSymbol = tokenMap[tick.token];
-                if (!rawSymbol) return;
-
-                const priceData = {
-                    symbol: rawSymbol,
-                    instrument_token: tick.token,
-                    ltp: Number(tick.ltp), 
-                    exchange: tick.exchange || "NSE",
-                    timestamp: new Date().toISOString()
-                };
-
-                priceMap[rawSymbol] = priceData;
-                io.to(`user:${userId}`).emit("price-update", priceData);
-            }
-        } catch (e) {
-            // Ignore parse errors for ping/pongs or non-tick data
+    webSocket.on('tick', (data) => {
+        if (!userLivePriceMaps.has(userId)) {
+            userLivePriceMaps.set(userId, {});
         }
+        const priceMap = userLivePriceMaps.get(userId);
+
+        const rawSymbol = tokenMap[data.token];
+        if (!rawSymbol) return;
+
+        const priceData = {
+            symbol: rawSymbol,
+            instrument_token: data.token,
+            ltp: Number(data.last_traded_price) / 100, 
+            exchange: data.exchange_type,
+            timestamp: new Date().toISOString()
+        };
+
+        priceMap[rawSymbol] = priceData;
+        io.to(`user:${userId}`).emit("price-update", priceData);
     });
 
-    ws.on('error', (err) => console.error(`[AngelOne] WS Error for user ${userId}:`, err.message));
-    ws.on('close', () => console.log(`[AngelOne] WS Closed for user ${userId}`));
+    webSocket.on('error', (err) => console.error(`[AngelOne] WS Error for user ${userId}:`, err));
+    webSocket.on('close', () => console.log(`[AngelOne] WS Closed for user ${userId}`));
 
-    // Shim to match the previous interaction signature for subscribeToAngelTokens
-    ws.fetchData = (subRequest) => {
-        const exchMap = { 1: "NSE", 2: "NFO", 3: "BSE", 4: "MCX" };
-        const exchangeStr = exchMap[subRequest.exchangeType] || "NSE";
-
-        const payload = JSON.stringify({
-            "type": "subscribe",
-            "data": {
-                "exchange": exchangeStr,
-                "tokens": subRequest.tokens
-            }
-        });
-
-        if (ws.readyState === WebSocket.OPEN) {
-            ws.send(payload);
-        } else {
-            ws.once('open', () => ws.send(payload));
-        }
-    };
-
-    return ws;
+    return webSocket;
 }
 
 export async function reconnectAngelTicker(userId) {

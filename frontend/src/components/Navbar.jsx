@@ -184,7 +184,7 @@ const isDarkPage = location.pathname === "/";
 
           <div className="hidden md:flex items-center gap-2">
             <Button asChild variant="outline" size="sm" className={`rounded-md font-bold px-4 transition-all ${
-              isDarkPage ? "border-white/10 bg-white/5 text-white hover:bg-white/10" : "border-zinc-200"
+              isDarkPage ? "border-white/10 bg-white/5 text-white hover:text-white hover:bg-white/10" : "border-zinc-200"
             }`}>
               <NavLink to="/broker">
                 <ShieldCheck size={16} className={`mr-2 ${isDarkPage ? "text-emerald-400" : "text-emerald-600"}`} /> Angel Login
