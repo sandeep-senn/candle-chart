@@ -17,7 +17,8 @@ import {
   Star,
   Trash2,
   Eye,
-  ChevronRight
+  ChevronRight,
+  Smartphone
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { SOCKET_URL, API_BASE_URL } from "../config";
@@ -149,6 +150,8 @@ const HistoryDashboard = () => {
 
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const [isRightSidebarVisible, setIsRightSidebarVisible] = useState(true);
+  const [isPhonePortrait, setIsPhonePortrait] = useState(false);
+  const [isRotateHintDismissed, setIsRotateHintDismissed] = useState(false);
 
   
   const filteredInstruments = availableInstruments.filter(inst =>
@@ -158,6 +161,29 @@ const HistoryDashboard = () => {
   const filteredIndicators = AVAILABLE_INDICATORS.filter(ind =>
     ind.label.toLowerCase().includes(indicatorQuery.toLowerCase())
   );
+
+  useEffect(() => {
+    const updateViewportMode = () => {
+      const isPhoneWidth = window.innerWidth < 768;
+      const isPortrait = window.innerHeight > window.innerWidth;
+      const shouldShowPortraitHint = isPhoneWidth && isPortrait;
+
+      setIsPhonePortrait(shouldShowPortraitHint);
+
+      if (!shouldShowPortraitHint) {
+        setIsRotateHintDismissed(false);
+      }
+    };
+
+    updateViewportMode();
+    window.addEventListener("resize", updateViewportMode);
+    window.addEventListener("orientationchange", updateViewportMode);
+
+    return () => {
+      window.removeEventListener("resize", updateViewportMode);
+      window.removeEventListener("orientationchange", updateViewportMode);
+    };
+  }, []);
 
   
   useEffect(() => {
@@ -1212,6 +1238,29 @@ const HistoryDashboard = () => {
 
         {}
         <div className={`flex-1 relative w-full h-full ${isDarkMode ? "bg-neutral-900" : "bg-white"}`}>
+          {isPhonePortrait && !isRotateHintDismissed && (
+            <div className={`absolute top-3 left-3 right-3 z-30 rounded-2xl border px-4 py-3 shadow-lg backdrop-blur-md ${isDarkMode ? "border-amber-500/30 bg-amber-500/10 text-amber-100" : "border-amber-200 bg-amber-50/95 text-amber-900"}`}>
+              <div className="flex items-start gap-3">
+                <div className={`mt-0.5 rounded-xl p-2 ${isDarkMode ? "bg-amber-400/10 text-amber-300" : "bg-amber-100 text-amber-700"}`}>
+                  <Smartphone size={18} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Rotate your phone for a wider history view</p>
+                  <p className={`mt-1 text-xs ${isDarkMode ? "text-amber-100/80" : "text-amber-800/80"}`}>
+                    History is easier to read in landscape mode.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsRotateHintDismissed(true)}
+                  className={`rounded-full p-1 transition-colors ${isDarkMode ? "hover:bg-white/10" : "hover:bg-amber-100"}`}
+                  aria-label="Dismiss rotate hint"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading && historyData.length === 0 && (
             <div className={`absolute inset-0 z-50 backdrop-blur-sm flex items-center justify-center ${isDarkMode ? "bg-neutral-900/80" : "bg-white/80"}`}>
               <div className="flex flex-col items-center">
