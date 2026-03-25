@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from 'react-toastify';
 import api from "../api/api";
-import { 
-    Plus, Trash2, Play, Search, X, 
-    Calculator, Pencil, ShoppingCart, 
+import {
+    Plus, Trash2, Play, Search, X,
+    Calculator, Pencil, ShoppingCart,
     ArrowRight, Activity, Trash
 } from "lucide-react";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -165,7 +165,16 @@ export default function BasketOrders() {
         }
         try {
             const res = await api.get(`/angel/search?query=${text}`);
-            setSearchResults(res.data.data || []);
+            const data = res.data.data || [];
+            setSearchResults(data);
+
+            if (data.length > 0) {
+                const tokens = data.slice(0, 15).map(item => item.token);
+                api.post("/subscribe", { 
+                    tokens, 
+                    exchangeType: 1 
+                }).catch(err => console.error("Auto-subscribe error", err));
+            }
         } catch (err) {
             console.error(err);
         }
@@ -277,20 +286,20 @@ export default function BasketOrders() {
                 <Card className="flex flex-col flex-1 border-zinc-200 overflow-hidden shadow-sm">
                     <CardHeader className="p-4 border-b border-zinc-100 flex items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-bold uppercase tracking-wider text-zinc-500">Collections</CardTitle>
-                        <Button 
-                            size="icon" 
-                            variant="outline" 
+                        <Button
+                            size="icon"
+                            variant="outline"
                             className="h-7 w-7 rounded-full"
                             onClick={() => setShowAddModal(!showAddModal)}
                         >
                             <Plus size={14} />
                         </Button>
                     </CardHeader>
-                    
+
                     <CardContent className="p-1.5 overflow-y-auto space-y-1">
                         {showAddModal && (
                             <div className="p-3 bg-zinc-50 rounded-lg space-y-2 mb-2 animate-in fade-in zoom-in-95">
-                                <Input 
+                                <Input
                                     autoFocus
                                     placeholder="Name..."
                                     value={newBasketName}
@@ -309,16 +318,15 @@ export default function BasketOrders() {
                             <div
                                 key={basket.id}
                                 onClick={() => setSelectedBasket(basket)}
-                                className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition-all ${
-                                    selectedBasket?.id === basket.id
-                                    ? "bg-zinc-900 text-white shadow-md font-bold"
-                                    : "hover:bg-zinc-100 text-zinc-600 font-medium"
-                                }`}
-                            >   
+                                className={`p-3 rounded-lg cursor-pointer flex justify-between items-center transition-all ${selectedBasket?.id === basket.id
+                                        ? "bg-zinc-900 text-white shadow-md font-bold"
+                                        : "hover:bg-zinc-100 text-zinc-600 font-medium"
+                                    }`}
+                            >
                                 <span className="truncate text-xs font-bold">{basket.name}</span>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
                                     className={`h-6 w-6 ${selectedBasket?.id === basket.id ? "hover:bg-white hover:text-zinc-900" : "text-zinc-300 hover:text-rose-500"}`}
                                     onClick={(e) => deleteBasket(basket.id, e)}
                                 >
@@ -348,7 +356,7 @@ export default function BasketOrders() {
                                         {calculatingMargin ? "..." : `₹${totalMargin.toLocaleString()}`}
                                     </div>
                                 </div>
-                                <Button 
+                                <Button
                                     disabled={executing || orders.length === 0}
                                     onClick={executeBasket}
                                     size="sm"
@@ -367,7 +375,7 @@ export default function BasketOrders() {
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Symbol Search</label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
-                                        <Input 
+                                        <Input
                                             placeholder="Search Apple, NIFTY..."
                                             value={searchQuery}
                                             onChange={e => searchSymbols(e.target.value.toUpperCase())}
@@ -375,17 +383,25 @@ export default function BasketOrders() {
                                         />
                                         {searchResults.length > 0 && (
                                             <Card className="absolute top-full left-0 right-0 mt-2 z-50 border-zinc-200 shadow-xl max-h-52 overflow-y-auto p-1">
-                                                {searchResults.map(res => (
-                                                    <Button 
-                                                        key={res.symbol}
-                                                        variant="ghost" 
-                                                        className="w-full justify-between items-center h-10 rounded-lg text-xs"
-                                                        onClick={() => selectSymbol(res)}
-                                                    >
-                                                        <span className="font-bold">{res.symbol}</span>
-                                                        <Badge variant="outline" className="text-[9px] h-4 px-1">{res.exchange}</Badge>
-                                                    </Button>
-                                                ))}
+                                                {searchResults.map(res => {
+                                                    const currentPrice = livePrices[res.token]?.ltp;
+                                                    return (
+                                                        <Button 
+                                                            key={res.symbol + res.token}
+                                                            variant="ghost" 
+                                                            className="w-full justify-between items-center h-12 rounded-lg text-xs"
+                                                            onClick={() => selectSymbol(res)}
+                                                        >
+                                                            <div className="flex flex-col items-start overflow-hidden">
+                                                                <span className="font-bold truncate w-full text-left">{res.symbol}</span>
+                                                                <span className={`text-[10px] font-mono font-bold ${currentPrice ? 'text-emerald-500' : 'text-zinc-400'}`}>
+                                                                    {currentPrice ? `₹${currentPrice.toFixed(2)}` : "—"}
+                                                                </span>
+                                                            </div>
+                                                            <Badge variant="outline" className="text-[9px] h-4 px-1 shrink-0 border-zinc-200">{res.exchange}</Badge>
+                                                        </Button>
+                                                    );
+                                                })}
                                             </Card>
                                         )}
                                     </div>
@@ -393,9 +409,9 @@ export default function BasketOrders() {
 
                                 <div className="w-28 space-y-1.5">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Type</label>
-                                    <select 
+                                    <select
                                         value={form.transaction_type}
-                                        onChange={e => setForm({...form, transaction_type: e.target.value})}
+                                        onChange={e => setForm({ ...form, transaction_type: e.target.value })}
                                         className="w-full h-10 px-3 rounded-lg border border-zinc-200 bg-white font-bold text-xs focus:outline-none focus:ring-1 focus:ring-zinc-900"
                                     >
                                         <option value="BUY">BUY</option>
@@ -405,16 +421,16 @@ export default function BasketOrders() {
 
                                 <div className="w-20 space-y-1.5">
                                     <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">QTY</label>
-                                    <Input 
+                                    <Input
                                         type="number"
                                         value={form.quantity}
-                                        onChange={e => setForm({...form, quantity: e.target.value})}
+                                        onChange={e => setForm({ ...form, quantity: e.target.value })}
                                         className="h-10 font-bold text-xs"
                                     />
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <Button 
+                                    <Button
                                         onClick={editingOrder ? updateOrder : addToBasket}
                                         disabled={!form.tradingsymbol}
                                         size="sm"

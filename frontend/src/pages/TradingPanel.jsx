@@ -26,20 +26,27 @@ export default function TradingPanel() {
     const [targetPrice, setTargetPrice] = useState("");
     const [stopLossPrice, setStopLossPrice] = useState("");
     const [livePrice, setLivePrice] = useState(null);
+    const [priceMap, setPriceMap] = useState({});
     const [margin, setMargin] = useState(null);
     const [loadingMargin, setLoadingMargin] = useState(false);
     const [isExecuting, setIsExecuting] = useState(false);
 
     useEffect(() => {
         document.title = "Trading Terminal | Candle";
-        
+
         const userId = localStorage.getItem("userId");
         const socket = io(SOCKET_URL, {
             query: { userId }
         });
-        
+
         socket.on("price-update", (data) => {
-            // Match by token for 100% accuracy (symbols like RELIANCE vs RELIANCE-EQ can cause mismatches)
+            // Update global price map for search results
+            setPriceMap(prev => ({
+                ...prev,
+                [data.instrument_token]: data.ltp
+            }));
+
+            // Backward compatibility for selected company's live price
             if (selectedCompany && data.instrument_token === selectedCompany.token) {
                 setLivePrice(data.ltp);
             }
@@ -56,7 +63,17 @@ export default function TradingPanel() {
         }
         try {
             const res = await api.get(`/angel/search?query=${val}`);
-            setResults(res.data.data || []);
+            const data = res.data.data || [];
+            setResults(data);
+
+            // Auto-subscribe to search results to get live LTPs
+            if (data.length > 0) {
+                const tokens = data.slice(0, 20).map(item => item.token);
+                api.post("/subscribe", {
+                    tokens,
+                    exchangeType: 1 // Default to NSE
+                }).catch(err => console.error("Auto-subscribe error", err));
+            }
         } catch (err) {
             console.error("Search error", err);
         }
@@ -94,7 +111,7 @@ export default function TradingPanel() {
     const handleExecute = async () => {
         if (!selectedCompany) return toast.error("Please select a company");
         if (orderType === "LIMIT" && !limitPrice) return toast.error("Please enter a limit price");
-        
+
         setIsExecuting(true);
         try {
             await api.post("/angel/placeOrder", {
@@ -133,7 +150,7 @@ export default function TradingPanel() {
     return (
         <div className="min-h-screen pt-20 pb-12 bg-zinc-50 px-6">
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
+
                 {/* Search & Discovery */}
                 <div className="lg:col-span-4 space-y-6">
                     <Card className="border-zinc-200">
@@ -153,29 +170,37 @@ export default function TradingPanel() {
                             </div>
 
                             <div className="mt-4 space-y-1 max-h-[400px] overflow-y-auto pr-2">
-                                {results.map((item) => (
-                                    <button
-                                        key={item.symbol}
-                                        onClick={() => {
-                                            setSelectedCompany(item);
-                                            setLivePrice(null);
-                                            setResults([]);
-                                            setSearchTerm(item.symbol);
-                                            // Subscribe via API
-                                            api.post("/subscribe", { tokens: [item.token], exchangeType: item.exchange === "NSE" ? 1 : 3 });
-                                        }}
-                                        className={`w-full text-left p-3 rounded-md transition-colors ${
-                                            selectedCompany?.symbol === item.symbol 
-                                            ? "bg-zinc-900 text-white" 
-                                            : "hover:bg-zinc-100 text-zinc-700 font-medium"
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-bold text-sm">{item.symbol}</span>
-                                            <Badge variant="outline" className="text-[10px] uppercase">{item.exchange}</Badge>
-                                        </div>
-                                    </button>
-                                ))}
+                                {results.map((item) => {
+                                    const currentLtp = priceMap[item.token];
+                                    return (
+                                        <button
+                                            key={item.symbol + item.token}
+                                            onClick={() => {
+                                                setSelectedCompany(item);
+                                                setLivePrice(null);
+                                                setResults([]);
+                                                setSearchTerm(item.symbol);
+                                                // Subscribe to selected symbol
+                                                api.post("/subscribe", { tokens: [item.token], exchangeType: item.exchange === "NSE" ? 1 : 1 });
+                                            }}
+                                            className={`w-full text-left p-3 rounded-md transition-colors ${
+                                                selectedCompany?.symbol === item.symbol
+                                                ? "bg-zinc-900 text-white"
+                                                : "hover:bg-zinc-100 text-zinc-700 font-medium"
+                                            }`}
+                                        >
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-sm">{item.symbol}</span>
+                                                    <span className={`text-[10px] font-mono font-bold ${currentLtp ? 'text-emerald-500' : 'text-zinc-400'}`}>
+                                                        {currentLtp ? `₹${currentLtp.toFixed(2)}` : "—"}
+                                                    </span>
+                                                </div>
+                                                <Badge variant="outline" className="text-[10px] uppercase h-fit shadow-none border-zinc-200">{item.exchange}</Badge>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </CardContent>
                     </Card>
