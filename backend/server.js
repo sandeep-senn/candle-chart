@@ -20,11 +20,21 @@ import { protect } from "./auth/utils/util.js";
 /* ================= APP INIT ================= */
 
 const app = express();
-app.use(cors({ origin: "*", credentials: true }));
+app.use(cors({ 
+    origin: ["https://candle-chart-ecru.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { 
+    cors: { 
+        origin: ["https://candle-chart-ecru.vercel.app", "http://localhost:5173", "http://localhost:3000"],
+        credentials: true
+    } 
+});
 
 export { io };
 
