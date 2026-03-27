@@ -319,16 +319,27 @@ const HistoryDashboard = () => {
     }
   };
 
+  const toChartDateString = (value) => {
+    if (!value) return null;
+    const utcDate = new Date(value);
+    if (Number.isNaN(utcDate.getTime())) return null;
+
+    const istDate = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+    return istDate.toISOString().split("T")[0];
+  };
+
   const handleRangeSelection = (range) => {
     setSelectedRange(range);
 
     if (historyData.length === 0 || !chartRef.current) return;
 
-    
     const lastDataPoint = historyData[historyData.length - 1];
-    const toDate = new Date(lastDataPoint.date);
+    const toStr = toChartDateString(lastDataPoint?.date);
+    if (!toStr) return;
 
-    
+    const toDate = new Date(lastDataPoint.date);
+    if (Number.isNaN(toDate.getTime())) return;
+
     let fromDate = new Date(toDate);
 
     switch (range) {
@@ -355,11 +366,9 @@ const HistoryDashboard = () => {
         break;
     }
 
-    
     const fromStr = fromDate.toISOString().split("T")[0];
-    const toStr = lastDataPoint.date.split("T")[0];
+    if (!fromStr) return;
 
-    
     chartRef.current.timeScale().setVisibleRange({
       from: fromStr,
       to: toStr
@@ -477,11 +486,6 @@ const HistoryDashboard = () => {
     earliestDateRef.current = null;
     fetchHistory(null);
   }, [symbol]);
-
-  useEffect(() => {
-    if (!historyData.length || !chartRef.current) return;
-    handleRangeSelection(selectedRange);
-  }, [historyData]);
 
   
   useEffect(() => {
@@ -741,6 +745,11 @@ const HistoryDashboard = () => {
     calendarVisibleRangeRef.current = true; 
 
   }, [historyData, chartType, isDarkMode]);
+
+  useEffect(() => {
+    if (!historyData.length || !chartRef.current || !candleSeriesRef.current) return;
+    handleRangeSelection(selectedRange);
+  }, [historyData, selectedRange]);
 
   
   useEffect(() => {
