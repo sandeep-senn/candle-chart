@@ -96,8 +96,7 @@ const HistoryDashboard = () => {
 
   
   
-  const [selectedInterval, setSelectedInterval] = useState("D");
-  const [selectedRange, setSelectedRange] = useState("ALL");
+  const [selectedRange, setSelectedRange] = useState("1Y");
 
   
   const [activeIndicators, setActiveIndicators] = useState([]); 
@@ -352,25 +351,8 @@ const HistoryDashboard = () => {
       case '1Y':
         fromDate.setFullYear(toDate.getFullYear() - 1);
         break;
-      case '3Y':
-        fromDate.setFullYear(toDate.getFullYear() - 3);
-        break;
-      case '5Y':
-        fromDate.setFullYear(toDate.getFullYear() - 5);
-        break;
-      case 'ALL':
-        
-        
-        fromDate = null;
-        break;
       default:
         break;
-    }
-
-    if (range === 'ALL') {
-      fetchHistory(null, true); 
-      setDateRange(null);
-      return;
     }
 
     
@@ -495,6 +477,11 @@ const HistoryDashboard = () => {
     earliestDateRef.current = null;
     fetchHistory(null);
   }, [symbol]);
+
+  useEffect(() => {
+    if (!historyData.length || !chartRef.current) return;
+    handleRangeSelection(selectedRange);
+  }, [historyData]);
 
   
   useEffect(() => {
@@ -1024,30 +1011,9 @@ const HistoryDashboard = () => {
 
           {}
           <div>
-            <label className={`text-xs font-bold tracking-wider mb-2 block uppercase ${isDarkMode ? "text-neutral-500" : "text-gray-500"}`}>Interval</label>
-            <div className="grid grid-cols-4 gap-2">
-              {['1m', '5m', '15m', '1h', '4h', 'D', 'W', 'M'].map((int) => (
-                <button
-                  key={int}
-                  onClick={() => setSelectedInterval(int)}
-                  className={`py-1.5 text-xs font-medium rounded border transition-all ${selectedInterval === int
-                    ? "bg-blue-600 border-blue-600 text-white shadow-md active:scale-95 transform"
-                    : isDarkMode
-                      ? "bg-neutral-800 border-neutral-700 text-gray-400 hover:bg-neutral-700"
-                      : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300"
-                    }`}
-                >
-                  {int}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {}
-          <div>
             <label className={`text-xs font-bold tracking-wider mb-2 block uppercase ${isDarkMode ? "text-neutral-500" : "text-gray-500"}`}>Date Range</label>
-            <div className="grid grid-cols-5 gap-2">
-              {['1D', '5D', '1M', '3M', '6M', '1Y', '3Y', '5Y', 'ALL'].map((range) => (
+            <div className="grid grid-cols-3 gap-2">
+              {['1D', '5D', '1M', '3M', '6M', '1Y'].map((range) => (
                 <button
                   key={range}
                   onClick={() => handleRangeSelection(range)}
@@ -1281,7 +1247,6 @@ const HistoryDashboard = () => {
             <div className={`absolute top-4 left-4 z-20 pointer-events-none text-xs font-mono backdrop-blur-[2px] p-2 rounded border shadow-sm ${isDarkMode ? "bg-neutral-900/80 border-neutral-800 text-gray-200" : "bg-white/80 border-gray-100/50 text-gray-800"}`}>
               <div className="flex items-center gap-2 mb-1">
                 <span className={`text-lg font-bold ${isDarkMode ? "text-gray-100" : "text-gray-800"}`}>{symbol}</span>
-                <span className="text-gray-400 text-[10px]">{selectedInterval}</span>
                 <span className="text-green-600">({activeIndicators.length} indicators)</span>
               </div>
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-gray-500">
